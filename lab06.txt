@@ -1,1 +1,1 @@
-This is the original text.
+This is the version from branch A.
