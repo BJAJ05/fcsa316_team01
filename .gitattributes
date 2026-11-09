@@ -1,0 +1,5 @@
+# Text files are stored with LF in the repository and converted for your OS on checkout.
+* text=auto
+
+# Shell scripts must keep LF even on Windows, otherwise they fail inside Linux/Docker.
+*.sh text eol=lf
