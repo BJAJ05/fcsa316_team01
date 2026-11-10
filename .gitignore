@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Django
+.env
+db.sqlite3
+backend/media/
+backend/staticfiles/
+
+# Node (see also frontend/.gitignore)
+node_modules/
+dist/
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
