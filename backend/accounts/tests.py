@@ -44,14 +44,15 @@ def test_user_admin_pages_render(client, url_name):
 
 
 @pytest.mark.django_db
-def test_admin_can_create_user_with_email(client):
+def test_admin_can_create_user_with_email_and_role(client):
     admin_user = User.objects.create_superuser(email="admin@example.com", password="s3cret-pass")
     client.force_login(admin_user)
 
     response = client.post(
         reverse("admin:accounts_user_add"),
         {
-            "email": "teacher@example.com",
+            "email": "Teacher@Example.com",
+            "role": "teacher",
             "usable_password": "true",
             "password1": "a-Strong-pass-123",
             "password2": "a-Strong-pass-123",
@@ -59,4 +60,16 @@ def test_admin_can_create_user_with_email(client):
     )
 
     assert response.status_code == 302
-    assert User.objects.get(email="teacher@example.com").check_password("a-Strong-pass-123")
+    created = User.objects.get(email="teacher@example.com")
+    assert created.check_password("a-Strong-pass-123")
+    assert created.is_teacher
+
+
+@pytest.mark.django_db
+def test_new_user_defaults_to_student_and_email_is_lowercased():
+    user = User.objects.create_user(email="Bat@Example.COM", password="s3cret-pass")
+
+    assert user.email == "bat@example.com"
+    assert user.role == User.Role.STUDENT
+    assert user.is_student
+    assert not user.is_teacher
