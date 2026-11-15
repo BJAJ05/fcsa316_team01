@@ -26,12 +26,7 @@ def register_user(email, password, role):
     email = User.objects.normalize_email(email)
     if User.objects.filter(email__iexact=email).exists():
         raise EmailAlreadyRegistered(email)
-    try:
-        with transaction.atomic():
-            return User.objects.create_user(email=email, password=password, role=role)
-    except IntegrityError as error:
-        # Two sign-ups with the same email at the same moment: the unique constraint decides.
-        raise EmailAlreadyRegistered(email) from error
+    return User.objects.create_user(email=email, password=password, role=role)
 
 
 def login_user(email, password):
