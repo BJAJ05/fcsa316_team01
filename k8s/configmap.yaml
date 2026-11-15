@@ -1,0 +1,17 @@
+# Non-secret settings shared by the backend pods, the migration Job and PostgreSQL.
+# The secret values (DJANGO_SECRET_KEY, DB_PASSWORD) live in the Secret "lms-secrets",
+# which is created with kubectl and never committed (see README, "Kubernetes (Minikube)").
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lms-config
+data:
+  DEBUG: "False"
+  # Local Minikube cluster only: the node IP and the Host header sent by the probes
+  # (the pod IP) are not known in advance. A real deployment lists its domain names here.
+  ALLOWED_HOSTS: "*"
+  DB_ENGINE: postgres
+  DB_HOST: lms-db          # the Service in postgres.yaml
+  DB_PORT: "5432"
+  DB_NAME: lms_db
+  DB_USER: lms_user

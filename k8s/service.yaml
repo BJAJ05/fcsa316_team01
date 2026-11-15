@@ -1,0 +1,15 @@
+# One stable address for the 3 backend pods; requests are spread across the ready ones.
+#   inside the cluster: http://lms-backend:8000 (used by the frontend's nginx)
+#   from your machine:  http://<minikube ip>:30800, e.g. `minikube service lms-backend --url`
+apiVersion: v1
+kind: Service
+metadata:
+  name: lms-backend
+spec:
+  type: NodePort
+  selector:
+    app: lms-backend
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30800

@@ -1,0 +1,50 @@
+# The React app served by nginx, which forwards /api, /admin and /static to the backend
+# Service. Apply after service.yaml: nginx looks up "lms-backend" when it starts.
+#   from your machine: `minikube service lms-frontend` (http://<minikube ip>:30080)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms-frontend
+  labels:
+    app: lms-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lms-frontend
+  template:
+    metadata:
+      labels:
+        app: lms-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: lms-frontend:1.0
+          # Built locally and copied in with `minikube image load`; never pulled from a registry.
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: BACKEND_URL
+              value: http://lms-backend:8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}
+            limits: {cpu: 200m, memory: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lms-frontend
+spec:
+  type: NodePort
+  selector:
+    app: lms-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080

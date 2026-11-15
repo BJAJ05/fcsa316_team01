@@ -1,0 +1,50 @@
+# The Django API (gunicorn) as 3 identical pods. Kubernetes keeps 3 running: a pod that
+# is deleted or crashes is replaced automatically.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms-backend
+  labels:
+    app: lms-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: lms-backend
+  template:
+    metadata:
+      labels:
+        app: lms-backend
+    spec:
+      containers:
+        - name: backend
+          image: lms-backend:1.0
+          # Built locally and copied in with `minikube image load`; never pulled from a registry.
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          # All settings from the ConfigMap; DJANGO_SECRET_KEY and DB_PASSWORD from the Secret.
+          # Migrations are not run here (RUN_MIGRATIONS is unset): migrate-job.yaml does that.
+          envFrom:
+            - configMapRef:
+                name: lms-config
+            - secretRef:
+                name: lms-secrets
+          # /api/health/ answers 503 when the database is unreachable. The pod then stops
+          # receiving traffic from the Service until the database is back.
+          readinessProbe:
+            httpGet:
+              path: /api/health/
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # Only checks that gunicorn accepts connections, so a database outage does not
+          # make Kubernetes restart healthy API pods.
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 256Mi}
