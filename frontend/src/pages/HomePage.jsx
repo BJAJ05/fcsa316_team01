@@ -1,9 +1,39 @@
 import { useEffect, useState } from 'react'
+import { Link, Navigate } from 'react-router'
 import { ApiError, apiFetch } from '../api/client.js'
+import { useAuth } from '../auth/AuthContext.js'
+import { dashboardPath } from '../auth/roles.js'
 
-// Temporary start page: shows whether the backend and database are reachable.
-// Replace it with the real landing/login flow during Sprint 1 (US-01).
+// Start page for logged-out visitors: sign up / log in buttons, plus the development
+// environment status (Frontend, Backend, database). Logged-in users go to their dashboard.
 export default function HomePage() {
+  const { user } = useAuth()
+
+  if (user) {
+    return <Navigate to={dashboardPath(user.role)} replace />
+  }
+
+  return (
+    <section>
+      <h1>Цахим сургалтын нэгдсэн платформ</h1>
+      <p>
+        Багш анги үүсгэж дасгал оруулдаг, сурагч ангийн кодоор нэгдэж дасгал ажиллан дүнгээ шууд
+        хардаг цахим сургалтын платформ.
+      </p>
+      <div className="actions">
+        <Link to="/register" className="button">
+          Бүртгүүлэх
+        </Link>
+        <Link to="/login" className="button secondary">
+          Нэвтрэх
+        </Link>
+      </div>
+      <HealthStatus />
+    </section>
+  )
+}
+
+function HealthStatus() {
   const [health, setHealth] = useState({ state: 'loading' })
 
   useEffect(() => {
@@ -17,11 +47,10 @@ export default function HomePage() {
   }, [])
 
   return (
-    <section>
-      <h1>Цахим сургалтын нэгдсэн платформ</h1>
+    <>
       <p className="muted">Хөгжүүлэлтийн орчны төлөв</p>
       <StatusList health={health} />
-    </section>
+    </>
   )
 }
 

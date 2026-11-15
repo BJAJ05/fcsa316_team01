@@ -41,8 +41,11 @@ frontend/
     ├── main.jsx          # Апп эхлэх цэг (Router)
     ├── App.jsx           # Хуудасны зам (route)-ууд
     ├── index.css         # Ерөнхий загвар
-    ├── api/client.js     # Backend руу хүсэлт илгээх apiFetch()
-    ├── components/       # Олон хуудсанд давтагдах хэсгүүд (Layout, товч, форм...)
+    ├── api/
+    │   ├── client.js     # Backend руу хүсэлт илгээх apiFetch()
+    │   └── formErrors.js # API-ийн алдааг формд харуулах formErrors()
+    ├── auth/             # Нэвтрэлт: AuthProvider, useAuth(), дүрүүд (roles.js)
+    ├── components/       # Олон хуудсанд давтагдах хэсгүүд (Layout, RequireAuth, FormField...)
     └── pages/            # Нэг хуудас = нэг файл
 ```
 
@@ -56,24 +59,41 @@ frontend/
    ```
 
 ### Backend руу хүсэлт илгээх
-`fetch`-ийг шууд биш, `src/api/client.js`-ийн `apiFetch`-ийг ашиглана. Зам нь `/api`-ийн дараах хэсэг
-бөгөөд `/`-ээр төгсөнө (Django-ийн URL-тай ижил).
+`fetch`-ийг шууд ашиглахгүй. Нэвтрэлт шаарддаг хүсэлтийг `useAuth()`-ийн **`authFetch`**-ээр, нээлттэй
+хүсэлтийг (`/health/` г.м.) `src/api/client.js`-ийн `apiFetch`-ээр илгээнэ. Хоёулаа ижил параметртэй.
+Зам нь `/api`-ийн дараах хэсэг бөгөөд `/`-ээр төгсөнө (Django-ийн URL-тай ижил).
 ```js
-import { ApiError, apiFetch } from '../api/client.js'
+import { ApiError } from '../api/client.js'
+import { useAuth } from '../auth/AuthContext.js'
 
-const classes = await apiFetch('/classes/', { token })
+// компонент дотор:
+const { authFetch } = useAuth()
+const classes = await authFetch('/classes/')
 
 try {
-  await apiFetch('/classes/join/', { method: 'POST', body: { code: 'AB12CD' }, token })
+  await authFetch('/classes/join/', { method: 'POST', body: { code: 'AB12CD' } })
 } catch (error) {
   if (error instanceof ApiError && error.status === 404) {
     // error.data — Django-ийн буцаасан алдааны JSON
   }
 }
 ```
-- `token` — нэвтэрсний дараа авсан JWT access token (`Authorization: Bearer ...` болж илгээгдэнэ).
-  Токеныг хаана хадгалахыг US-01-ийн ажлаар шийднэ.
+- `authFetch` нь JWT access token-ийг (`Authorization: Bearer ...`) өөрөө илгээнэ. Token-ий хугацаа
+  дууссан бол refresh token-оор шинэчилж нэг удаа дахин оролдоно; чадахгүй бол хэрэглэгчийг гаргана.
+- Token-ууд `localStorage`-д (`lms.auth` түлхүүр) хадгалагдана — хуудсыг дахин ачаалахад нэвтэрсэн хэвээр.
+- Формд алдаа харуулах: `formErrors(error)` (`src/api/formErrors.js`) → `{ fields: { email: '...' }, general }`,
+  талбарыг `components/FormField.jsx`-ээр (`<FormField label error>`) зурна. Жишээ: `pages/RegisterPage.jsx`.
 - Файл илгээхдээ `body`-д `FormData` өгнө (US-14).
+
+### Нэвтрэлт ба дүр (US-01)
+```js
+const { user, logout } = useAuth()   // user = { id, email, role: 'teacher' | 'student' } эсвэл null
+```
+Нэвтрэлт шаарддаг хуудсыг `App.jsx`-д `<RequireAuth>`-аар ороож, шаардлагатай бол дүрийг заана:
+```jsx
+<Route path="teacher/classes" element={<RequireAuth role="teacher"><ClassesPage /></RequireAuth>} />
+```
+Нэвтрээгүй хэрэглэгчийг `/login` руу, өөр дүртэйг өөрийн самбар (`/teacher`, `/student`) руу шилжүүлнэ.
 
 Хөгжүүлэлтийн үед Vite нь `/api`-ийг `http://127.0.0.1:8000` руу дамжуулдаг тул CORS тохиргоо
 шаардлагагүй. Backend өөр хаягт ажиллаж байвал `BACKEND_URL` орчны хувьсагчаар солино.

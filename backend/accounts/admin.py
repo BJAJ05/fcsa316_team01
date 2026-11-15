@@ -8,7 +8,7 @@ from .models import User
 class UserCreationForm(AdminUserCreationForm):
     class Meta:
         model = User
-        fields = ("email",)
+        fields = ("email", "role")
 
 
 class UserEditForm(UserChangeForm):
@@ -25,12 +25,13 @@ class UserAdmin(BaseUserAdmin):
     form = UserEditForm
 
     ordering = ("email",)
-    list_display = ("email", "first_name", "last_name", "is_staff")
+    list_display = ("email", "role", "first_name", "last_name", "is_staff")
+    list_filter = ("role", "is_staff", "is_superuser", "is_active")
     search_fields = ("email", "first_name", "last_name")
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Personal info", {"fields": ("first_name", "last_name")}),
+        ("Personal info", {"fields": ("role", "first_name", "last_name")}),
         (
             "Permissions",
             {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
@@ -42,7 +43,7 @@ class UserAdmin(BaseUserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("email", "usable_password", "password1", "password2"),
+                "fields": ("email", "role", "usable_password", "password1", "password2"),
             },
         ),
     )

@@ -136,6 +136,27 @@ App бүр ижил 3 давхаргатай:
 View нь өгөгдлийн сан руу шууд хандахгүй, `services.py`-ийн функцийг дуудна. Ингэснээр бизнес логикийг
 HTTP-гүйгээр unit тестлэх боломжтой.
 
+### Нэвтрэлтийн API (US-01)
+
+| Хүсэлт | Body | Хариу |
+|---|---|---|
+| `POST /api/auth/register/` | `{email, password, role}` — `role` нь `teacher` эсвэл `student` | `201 {user, access, refresh}`; имэйл давхардвал `400 {"email": ["Энэ имэйл бүртгэлтэй байна."]}` |
+| `POST /api/auth/login/` | `{email, password}` | `200 {user, access, refresh}`; буруу бол `401 {"detail": "Имэйл эсвэл нууц үг буруу байна."}` |
+| `POST /api/auth/refresh/` | `{refresh}` | `200 {access}` (access token 60 минут, refresh token 7 хоног хүчинтэй) |
+| `GET /api/auth/me/` | — (token шаардана) | `200 {id, email, role}` |
+
+- `user` нь `{id, email, role}`. Access token дотор `role`, `email` claim бий (frontend самбараа сонгоход
+  ашиглана); серверийн эрх шалгалт өгөгдлийн сангаас уншдаг.
+- Имэйлийг жижиг үсгээр хадгалдаг тул бүртгэл, нэвтрэлтэд том жижиг үсэг ялгахгүй.
+- Дүрээр эрх шалгах: `accounts/permissions.py`-ийн `IsTeacher`, `IsStudent`; код дотор
+  `request.user.is_teacher`, `request.user.is_student`.
+  ```python
+  from accounts.permissions import IsTeacher
+
+  class CreateClassView(APIView):
+      permission_classes = [IsTeacher]
+  ```
+
 ## 6. Багийн дүрэм
 
 - **Хэрэглэгчийн model:** `accounts.User` (имэйлээр нэвтэрдэг, `username` байхгүй). ForeignKey-д

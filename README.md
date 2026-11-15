@@ -35,7 +35,7 @@
 ## Ажлын урсгал (Git)
 
 1. `main`-ийг шинэчилнэ: `git checkout main`, `git pull`
-2. Даалгавар бүрд шинэ branch: `git checkout -b feature/US-03-join-class`
+2. User Story бүрд шинэ branch, нэр нь story-ийн дугаар: `git checkout -b us03` (US-03-ийн хувьд)
    (засвар бол `fix/...`, тохиргоо бол `chore/...`)
 3. Жижиг, утга бүхий commit хийнэ. Push хийгээд GitHub дээр `main` руу **Pull Request** нээнэ.
    PR-ын тайлбарт User Story-ийн дугаарыг бичнэ.
