@@ -2,3 +2,21 @@
 DJANGO_SETTINGS_MODULE = "config.settings_test"
 python_files = ["tests.py", "test_*.py"]
 addopts = "--strict-markers"
+
+# `pytest --cov`: which code counts toward coverage (tests, migrations and the venv do not).
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "venv/*",
+    "*/migrations/*",
+    "*/tests.py",
+    "*/test_*.py",
+    "manage.py",
+    "config/asgi.py",
+    "config/wsgi.py",
+    "config/settings_test.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
