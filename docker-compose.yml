@@ -1,0 +1,51 @@
+# The whole app in containers: PostgreSQL + Django API + React/nginx.
+#   docker compose up -d --build   → http://localhost:8080
+#   docker compose down            → stop (add -v to also delete the database)
+# Values below are for local use only. Override them in a root .env file (git-ignored) if needed.
+name: lms
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: lms_db
+      POSTGRES_USER: lms_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lms-compose-dev}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lms_user -d lms_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No "ports:" on purpose: only the backend talks to the database, and port 5432 on
+    # the host may already be used by a locally installed PostgreSQL.
+
+  backend:
+    build: ./backend
+    image: lms-backend:1.0
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-compose-dev-only-insecure-key-0123456789}
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DB_ENGINE: postgres
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: lms_db
+      DB_USER: lms_user
+      DB_PASSWORD: ${DB_PASSWORD:-lms-compose-dev}
+      RUN_MIGRATIONS: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    image: lms-frontend:1.0
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
