@@ -167,3 +167,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Uploaded PDF/PNG attachments (US-14) are stored here in development.
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# WhiteNoise serves the files `collectstatic` gathered into STATIC_ROOT (the admin's CSS/JS)
+# when DEBUG=False, e.g. in the Docker image, where nothing else serves them. The folder only
+# exists after `collectstatic`; without it (local development, tests) WhiteNoise is left out,
+# and `runserver` serves static files itself.
+if STATIC_ROOT.is_dir():
+    MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")

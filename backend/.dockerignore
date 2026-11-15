@@ -1,0 +1,13 @@
+# Kept out of the image: local environments, secrets and generated files.
+venv/
+__pycache__/
+*.py[cod]
+.env
+.pytest_cache/
+.coverage
+htmlcov/
+db.sqlite3
+media/
+staticfiles/
+Dockerfile
+.dockerignore
