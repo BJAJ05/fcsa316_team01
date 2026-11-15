@@ -92,8 +92,11 @@ python manage.py runserver
 
 ### Тест ажиллуулах
 ```bash
-pytest
+pytest                                     # бүх тест
+pytest accounts/test_register_user.py -v   # нэг файл, тест бүрийн нэрээр
+pytest --cov                               # + coverage: файл бүрийн хувь, тестэд хамрагдаагүй мөрүүд
 ```
+Coverage-д юу тооцогдохыг `pyproject.toml`-д тохируулсан (тест, migration-ийг тооцохгүй).
 `.env` байгаа бол тест PostgreSQL дээр, байхгүй бол SQLite дээр ажиллана
 (`config/settings_test.py`). CI (GitHub Actions) дээр орчны хувьсагчаар PostgreSQL 16 service-ийг
 ашиглана (`.github/workflows/ci.yml`).

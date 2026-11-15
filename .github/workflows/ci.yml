@@ -1,5 +1,5 @@
 # Runs on every pull request and on every push (merge) to main:
-#   backend  — checks for uncommitted migrations, then runs pytest on PostgreSQL 16
+#   backend  — checks for uncommitted migrations, then runs pytest (with coverage) on PostgreSQL 16
 #   frontend — installs exact dependencies from package-lock.json and builds the app
 name: CI
 
@@ -71,8 +71,10 @@ jobs:
       - name: Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
 
-      - name: Run tests
-        run: pytest -v
+      # --cov prints a coverage table (with the lines no test reaches) at the end of the log;
+      # what counts is set in pyproject.toml.
+      - name: Run tests with coverage
+        run: pytest -v --cov
 
   frontend:
     name: frontend

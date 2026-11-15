@@ -1,4 +1,7 @@
-"""Tests for US-01: role-based registration, login and JWT (services, API, permissions)."""
+"""
+Tests for US-01: role-based registration, login and JWT (services, API, permissions).
+The unit tests for register_user() itself are in test_register_user.py.
+"""
 
 from types import SimpleNamespace
 
@@ -34,25 +37,6 @@ def register(api, email="teacher@example.com", password=PASSWORD, role="teacher"
 
 
 # --- Business layer (services.py) -------------------------------------------
-
-
-@pytest.mark.django_db
-def test_register_user_creates_user_with_role():
-    user = services.register_user("Teacher@Example.com", PASSWORD, User.Role.TEACHER)
-
-    assert user.email == "teacher@example.com"
-    assert user.is_teacher
-    assert user.check_password(PASSWORD)
-
-
-@pytest.mark.django_db
-def test_register_user_rejects_duplicate_email_ignoring_case():
-    services.register_user("bat@example.com", PASSWORD, User.Role.STUDENT)
-
-    with pytest.raises(services.EmailAlreadyRegistered):
-        services.register_user("BAT@Example.com", PASSWORD, User.Role.TEACHER)
-
-    assert User.objects.count() == 1
 
 
 @pytest.mark.django_db
