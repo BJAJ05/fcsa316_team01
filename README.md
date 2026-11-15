@@ -128,7 +128,7 @@ docker compose up -d --build   # анх удаа эсвэл код өөрчил�
 5. `main` руу шууд push хийхгүй.
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) нь PR бүр болон `main` руу merge бүрд
-backend-ийн migration шалгалт, тестийг (PostgreSQL 16 дээр), frontend-ийн build-ийг ажиллуулна.
+backend-ийн migration шалгалт, тест, coverage-ийг (PostgreSQL 16 дээр), frontend-ийн build-ийг ажиллуулна.
 CI улаан бол merge хийхгүй — алдааг засаад дахин push хийнэ.
 
 GitHub Projects самбар дээрх картыг ажлын явцын дагуу (In Progress → Review → Done) шилжүүлнэ.
@@ -143,6 +143,6 @@ GitHub Projects самбар дээрх картыг ажлын явцын да�
 | 7 | GitHub Actions CI | **Хийгдсэн:** `.github/workflows/ci.yml` — PR бүр, `main` руу merge бүрд backend (migration шалгалт, PostgreSQL 16 service дээр `pytest`), frontend (`npm ci` → `npm run build`) |
 | 8 | Dockerfile, Docker Compose | **Хийгдсэн:** `backend/Dockerfile` (gunicorn, WhiteNoise), `frontend/Dockerfile` (2 шаттай build → nginx), `docker-compose.yml` (db, backend, frontend) — дээрх "Docker-оор ажиллуулах" хэсгийг үзнэ үү |
 | 9 | Minikube | **Хийгдсэн:** `k8s/` — PostgreSQL (volume), migration Job, backend 3 replica (`/api/health/` readiness probe), NodePort Service-үүд, frontend — дээрх "Kubernetes (Minikube)" хэсгийг үзнэ үү |
-| 10 | Автомат тест | `pytest` + `pytest-django` тохируулагдсан; бизнес логик `services.py`-д тусдаа тул unit тестлэхэд хялбар |
+| 10 | Автомат тест | **Хийгдсэн:** `backend/accounts/test_register_user.py` — `register_user()`-ийн unit тест (Arrange/Act/Assert; энгийн, хязгаарын, mock тохиолдол), `pytest-cov`-оор coverage, CI-д `pytest --cov` |
 | 11 | Статик шинжилгээ | Linter-ийг санаатайгаар тохируулаагүй — энэ лабаар нэмнэ |
 | 13 | Prometheus, Grafana | `/metrics` endpoint-ийг энэ лабаар нэмнэ |
