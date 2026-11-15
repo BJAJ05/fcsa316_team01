@@ -1,5 +1,7 @@
 # Цахим сургалтын нэгдсэн платформ
 
+[![CI](https://github.com/BJAJ05/fcsa316_team01/actions/workflows/ci.yml/badge.svg)](https://github.com/BJAJ05/fcsa316_team01/actions/workflows/ci.yml)
+
 ## Багийн гишүүд
 - А.Баяржавхлан (Product Owner)
 - Б.Тэмүүлэн (Scrum Master)
@@ -36,11 +38,16 @@
 
 1. `main`-ийг шинэчилнэ: `git checkout main`, `git pull`
 2. User Story бүрд шинэ branch, нэр нь story-ийн дугаар: `git checkout -b us03` (US-03-ийн хувьд)
-   (засвар бол `fix/...`, тохиргоо бол `chore/...`)
+   (лабораторийн ажил бол `labNN-...`, жишээ нь `lab07-ci`; засвар бол `fix/...`)
 3. Жижиг, утга бүхий commit хийнэ. Push хийгээд GitHub дээр `main` руу **Pull Request** нээнэ.
-   PR-ын тайлбарт User Story-ийн дугаарыг бичнэ.
-4. Багийн өөр нэг гишүүн **code review** хийж зөвшөөрсний дараа merge хийнэ.
+   PR-ын тайлбарт User Story-ийн (эсвэл лабын) дугаарыг бичнэ.
+4. **CI** ногоон болмогц PR-ын зохиогч merge хийнэ. Багийн өөр гишүүн code review хийвэл сайн,
+   гэхдээ review-г хүлээхгүй.
 5. `main` руу шууд push хийхгүй.
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) нь PR бүр болон `main` руу merge бүрд
+backend-ийн migration шалгалт, тестийг (PostgreSQL 16 дээр), frontend-ийн build-ийг ажиллуулна.
+CI улаан бол merge хийхгүй — алдааг засаад дахин push хийнэ.
 
 GitHub Projects самбар дээрх картыг ажлын явцын дагуу (In Progress → Review → Done) шилжүүлнэ.
 
@@ -51,7 +58,7 @@ GitHub Projects самбар дээрх картыг ажлын явцын да�
 
 | Лаб | Сэдэв | Одоо бэлэн байгаа зүйл |
 |---|---|---|
-| 7 | GitHub Actions CI | `backend/`-д `pip install -r requirements-dev.txt` → `pytest` нь `.env`, PostgreSQL-гүйгээр ажиллана; `frontend/`-д `npm ci` → `npm run build` |
+| 7 | GitHub Actions CI | **Хийгдсэн:** `.github/workflows/ci.yml` — PR бүр, `main` руу merge бүрд backend (migration шалгалт, PostgreSQL 16 service дээр `pytest`), frontend (`npm ci` → `npm run build`) |
 | 8 | Dockerfile, Docker Compose | Бүх тохиргоо орчны хувьсагчаас (`.env`) уншигдана; `DB_HOST`-ийг compose-ын service нэрээр солиход болно |
 | 9 | Minikube | `/api/health/` endpoint-ийг liveness/readiness probe болгон ашиглаж болно |
 | 10 | Автомат тест | `pytest` + `pytest-django` тохируулагдсан; бизнес логик `services.py`-д тусдаа тул unit тестлэхэд хялбар |

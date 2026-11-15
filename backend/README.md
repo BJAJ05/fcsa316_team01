@@ -94,8 +94,9 @@ python manage.py runserver
 ```bash
 pytest
 ```
-`.env` байгаа бол тест PostgreSQL дээр, байхгүй бол (жишээ нь CI дээр) SQLite дээр ажиллана
-(`config/settings_test.py`).
+`.env` байгаа бол тест PostgreSQL дээр, байхгүй бол SQLite дээр ажиллана
+(`config/settings_test.py`). CI (GitHub Actions) дээр орчны хувьсагчаар PostgreSQL 16 service-ийг
+ашиглана (`.github/workflows/ci.yml`).
 
 ## 5. Бүтэц
 
