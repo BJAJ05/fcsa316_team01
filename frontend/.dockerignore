@@ -1,0 +1,6 @@
+# Kept out of the build context: installed and built files are recreated inside the image.
+node_modules
+dist
+*.local
+Dockerfile
+.dockerignore
