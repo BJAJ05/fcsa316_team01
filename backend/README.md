@@ -98,6 +98,18 @@ pytest
 (`config/settings_test.py`). CI (GitHub Actions) дээр орчны хувьсагчаар PostgreSQL 16 service-ийг
 ашиглана (`.github/workflows/ci.yml`).
 
+### Docker image
+
+`Dockerfile` нь gunicorn-оор API-г ажиллуулна (`DEBUG=False`, admin-ий CSS-ийг WhiteNoise өгнө).
+Тохиргоо нь `.env` биш, контейнерийн орчны хувьсагчаас уншигдана. `RUN_MIGRATIONS=1` бол контейнер асахдаа
+`migrate` хийнэ (`entrypoint.sh`). Ганцаараа SQLite-тэй туршиж үзэх:
+```bash
+docker build -t lms-backend:1.0 .
+docker run --rm -p 8000:8000 -e DJANGO_SECRET_KEY=local-test-insecure-key-0123456789abc \
+  -e DB_ENGINE=sqlite -e RUN_MIGRATIONS=1 lms-backend:1.0
+```
+Бүх системийг хамт ажиллуулах бол үндсэн README-ийн "Docker-оор ажиллуулах" хэсгийг үзнэ үү.
+
 ## 5. Бүтэц
 
 ```

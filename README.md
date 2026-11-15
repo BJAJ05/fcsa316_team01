@@ -34,6 +34,27 @@
 
 Нүүр хуудсанд гурван ✓ (Frontend, Backend, өгөгдлийн сан) гарвал орчин бэлэн болсон.
 
+### Docker-оор ажиллуулах
+
+PostgreSQL, Python, Node суулгалгүйгээр бүх системийг (өгөгдлийн сан + Django + React) контейнерт
+ажиллуулна. Docker болон Compose plugin хэрэгтэй (`docker compose version`-оор шалгана).
+
+```bash
+docker compose up -d --build   # анх удаа эсвэл код өөрчилсний дараа
+```
+<http://localhost:8080> нээнэ (нүүр хуудсанд гурван ✓ гарна). Админ хэрэглэгч үүсгэх:
+`docker compose exec backend python manage.py createsuperuser` → <http://localhost:8080/admin/>
+
+| Комманд | Юу хийх вэ |
+|---|---|
+| `docker compose ps` | Контейнеруудын төлөв |
+| `docker compose logs -f backend` | Backend-ийн лог |
+| `docker compose down` | Зогсоох (өгөгдөл хадгалагдана) |
+| `docker compose down -v` | Зогсоож, өгөгдлийн санг устгах |
+
+Энд ашиглагдах нууц үг, түлхүүр нь зөвхөн локал туршилтынх (`docker-compose.yml`). Өөрчлөх бол repo-ийн
+үндсэн хавтсанд `.env` файл үүсгэж `DB_PASSWORD=...`, `DJANGO_SECRET_KEY=...` гэж бичнэ (git-д орохгүй).
+
 ## Ажлын урсгал (Git)
 
 1. `main`-ийг шинэчилнэ: `git checkout main`, `git pull`
@@ -59,7 +80,7 @@ GitHub Projects самбар дээрх картыг ажлын явцын да�
 | Лаб | Сэдэв | Одоо бэлэн байгаа зүйл |
 |---|---|---|
 | 7 | GitHub Actions CI | **Хийгдсэн:** `.github/workflows/ci.yml` — PR бүр, `main` руу merge бүрд backend (migration шалгалт, PostgreSQL 16 service дээр `pytest`), frontend (`npm ci` → `npm run build`) |
-| 8 | Dockerfile, Docker Compose | Бүх тохиргоо орчны хувьсагчаас (`.env`) уншигдана; `DB_HOST`-ийг compose-ын service нэрээр солиход болно |
+| 8 | Dockerfile, Docker Compose | **Хийгдсэн:** `backend/Dockerfile` (gunicorn, WhiteNoise), `frontend/Dockerfile` (2 шаттай build → nginx), `docker-compose.yml` (db, backend, frontend) — дээрх "Docker-оор ажиллуулах" хэсгийг үзнэ үү |
 | 9 | Minikube | `/api/health/` endpoint-ийг liveness/readiness probe болгон ашиглаж болно |
 | 10 | Автомат тест | `pytest` + `pytest-django` тохируулагдсан; бизнес логик `services.py`-д тусдаа тул unit тестлэхэд хялбар |
 | 11 | Статик шинжилгээ | Linter-ийг санаатайгаар тохируулаагүй — энэ лабаар нэмнэ |
