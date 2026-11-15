@@ -13,9 +13,6 @@ on:
 permissions:
   contents: read
 
-# Actions are pinned to v7, which runs on Node 24. The v4/v5 versions named in the
-# lab sheet run on Node 20, which GitHub has deprecated.
-
 jobs:
   backend:
     name: backend
