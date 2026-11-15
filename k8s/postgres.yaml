@@ -1,0 +1,78 @@
+# PostgreSQL 16: a volume for the data, one pod, and an in-cluster Service "lms-db".
+# The data survives pod restarts. `kubectl delete -f k8s/postgres.yaml` also deletes it.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: lms-db-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lms-db
+  labels:
+    app: lms-db
+spec:
+  replicas: 1
+  # The old pod stops before the new one starts, so two PostgreSQL servers never share one data folder.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lms-db
+  template:
+    metadata:
+      labels:
+        app: lms-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef: {name: lms-config, key: DB_NAME}
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef: {name: lms-config, key: DB_USER}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: lms-secrets, key: DB_PASSWORD}
+            # A subfolder of the volume, so initdb starts from an empty folder.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          # Over TCP: on first start the image runs a temporary socket-only server while it
+          # creates the database, and the pod must not count as ready during that time.
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -h 127.0.0.1 -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\""]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: lms-db-data
+---
+# ClusterIP (the default): reachable only inside the cluster, as lms-db:5432.
+apiVersion: v1
+kind: Service
+metadata:
+  name: lms-db
+spec:
+  selector:
+    app: lms-db
+  ports:
+    - port: 5432
+      targetPort: 5432

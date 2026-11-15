@@ -1,0 +1,25 @@
+# Runs `migrate` once before the backend starts, instead of every replica racing to do it.
+# A Job's pod template cannot be changed. To run it again (new migrations, new image tag):
+#   kubectl delete job lms-migrate && kubectl apply -f k8s/migrate-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: lms-migrate
+spec:
+  # Retries cover the case where PostgreSQL is not accepting connections yet.
+  backoffLimit: 6
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: lms-backend:1.0
+          # Built locally and copied in with `minikube image load`; never pulled from a registry.
+          imagePullPolicy: Never
+          # Replaces the image's CMD (gunicorn); the entrypoint script runs it as given.
+          args: ["python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: lms-config
+            - secretRef:
+                name: lms-secrets
