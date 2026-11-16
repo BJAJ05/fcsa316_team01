@@ -18,4 +18,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-only-insecure-key-not-a-secret-0123456789")
 os.environ.setdefault("DB_ENGINE", "sqlite")
 
+# Django convention: test settings = all base settings, with the env defaults above.
+# The import must come after os.environ is set, and it re-exports every setting.
+# pylint: disable-next=wildcard-import,unused-wildcard-import,wrong-import-position
 from config.settings import *  # noqa: E402, F401, F403

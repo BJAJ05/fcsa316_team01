@@ -1,3 +1,5 @@
+"""Project-level API views (health check)."""
+
 from django.db import DatabaseError, connection
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny

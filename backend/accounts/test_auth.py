@@ -22,12 +22,14 @@ EMAIL_TAKEN = "Энэ имэйл бүртгэлтэй байна."
 BAD_LOGIN = "Имэйл эсвэл нууц үг буруу байна."
 
 
-@pytest.fixture
-def api():
+@pytest.fixture(name="api")
+def fixture_api():
+    """DRF test client for calling the API."""
     return APIClient()
 
 
 def register(api, email="teacher@example.com", password=PASSWORD, role="teacher", **extra):
+    """POST to the register endpoint and return the response."""
     return api.post(
         reverse("register"),
         {"email": email, "password": password, "role": role},

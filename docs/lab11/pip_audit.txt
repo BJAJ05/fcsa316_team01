@@ -1,0 +1,2 @@
+$ cd backend && pip-audit -r requirements.txt -r requirements-dev.txt
+No known vulnerabilities found
