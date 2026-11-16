@@ -1,0 +1,5 @@
+$ cd frontend && npm audit
+found 0 vulnerabilities
+
+$ npm audit --omit=dev   # only packages shipped to users
+found 0 vulnerabilities

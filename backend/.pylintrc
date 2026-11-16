@@ -1,0 +1,26 @@
+# Pylint configuration for the LMS Django backend (Lab 11).
+# Base rule set: pylint defaults + the pylint-django plugin, which teaches
+# pylint about Django models, managers and settings.
+
+[MAIN]
+load-plugins=pylint_django
+django-settings-module=config.settings_test
+# Auto-generated code is not linted.
+ignore=migrations,venv,.venv
+jobs=0
+
+[FORMAT]
+max-line-length=100
+
+[REPORTS]
+score=yes
+
+[BASIC]
+# Test functions are named after the behaviour they check (test_rejects_empty_email),
+# so they do not need a docstring as well.
+no-docstring-rgx=^_|^test_
+
+[DESIGN]
+# Django admin, models and TextChoices inherit from deep framework class hierarchies
+# (UserAdmin has 11 parents); this is not something our code can change.
+max-parents=12

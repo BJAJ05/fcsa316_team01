@@ -105,6 +105,9 @@ export default function AuthProvider({ children }) {
       return
     }
     let ignore = false
+    // React's documented "fetch in an effect" pattern: setUser/setStatus run only in the
+    // promise callbacks after the request finishes (guarded by `ignore`), never synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     authFetch('/auth/me/')
       .then((me) => {
         if (!ignore) setUser(me)

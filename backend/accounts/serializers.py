@@ -20,7 +20,9 @@ PASSWORD_ERRORS = {
 # Django's password validators (settings.AUTH_PASSWORD_VALIDATORS) speak English;
 # show their errors in Mongolian, keyed by the validator's error code.
 PASSWORD_RULE_MESSAGES = {
-    "password_too_short": "Нууц үг хэтэрхий богино байна. Хамгийн багадаа {min_length} тэмдэгт оруулна уу.",
+    "password_too_short": (
+        "Нууц үг хэтэрхий богино байна. Хамгийн багадаа {min_length} тэмдэгт оруулна уу."
+    ),
     "password_too_common": "Энэ нууц үг хэтэрхий түгээмэл байна.",
     "password_entirely_numeric": "Нууц үг зөвхөн тооноос бүрдэж болохгүй.",
     "password_too_similar": "Нууц үг имэйл хаягтай хэт төстэй байна.",
@@ -28,6 +30,7 @@ PASSWORD_RULE_MESSAGES = {
 
 
 def _password_messages(error):
+    """Translate Django password-validator errors to Mongolian messages."""
     messages = []
     for item in error.error_list:
         template = PASSWORD_RULE_MESSAGES.get(item.code)
@@ -36,13 +39,19 @@ def _password_messages(error):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Public user data returned by the API: id, email, role."""
+
     class Meta:
         model = User
         fields = ("id", "email", "role")
         read_only_fields = fields
 
 
-class RegisterSerializer(serializers.Serializer):
+# Input-only serializers: they validate data and never save it themselves
+# (services.py does), so DRF's abstract create()/update() are intentionally not implemented.
+class RegisterSerializer(serializers.Serializer):  # pylint: disable=abstract-method
+    """Validates registration input: email, password (Django rules) and role."""
+
     email = serializers.EmailField(error_messages=EMAIL_ERRORS)
     password = serializers.CharField(
         write_only=True, trim_whitespace=False, error_messages=PASSWORD_ERRORS
@@ -64,7 +73,9 @@ class RegisterSerializer(serializers.Serializer):
         return attrs
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):  # pylint: disable=abstract-method
+    """Validates login input: email and password."""
+
     email = serializers.EmailField(error_messages=EMAIL_ERRORS)
     password = serializers.CharField(
         write_only=True, trim_whitespace=False, error_messages=PASSWORD_ERRORS

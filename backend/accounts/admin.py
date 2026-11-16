@@ -1,3 +1,5 @@
+"""Django admin for the custom email-based User model."""
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import AdminUserCreationForm, UserChangeForm
@@ -6,12 +8,16 @@ from .models import User
 
 
 class UserCreationForm(AdminUserCreationForm):
+    """Admin "add user" form: email and role instead of username."""
+
     class Meta:
         model = User
         fields = ("email", "role")
 
 
 class UserEditForm(UserChangeForm):
+    """Admin "change user" form for the custom User model."""
+
     class Meta:
         model = User
         fields = "__all__"

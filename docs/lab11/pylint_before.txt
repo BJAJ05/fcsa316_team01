@@ -1,0 +1,122 @@
+$ cd backend && pylint $(git ls-files "*.py" | grep -v "/migrations/")
+(Output captured before any fixes.)
+************* Module accounts.admin
+accounts/admin.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+accounts/admin.py:8:0: C0115: Missing class docstring (missing-class-docstring)
+accounts/admin.py:8:0: R0901: Too many ancestors (11/7) (too-many-ancestors)
+accounts/admin.py:14:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module accounts.apps
+accounts/apps.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+accounts/apps.py:4:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module accounts.models
+accounts/models.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+accounts/models.py:15:4: W0237: Parameter 'username' has been renamed to 'email' in overriding 'UserManager.get_by_natural_key' method (arguments-renamed)
+accounts/models.py:28:4: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/models.py:33:4: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/models.py:53:4: C0115: Missing class docstring (missing-class-docstring)
+accounts/models.py:53:4: R0901: Too many ancestors (9/7) (too-many-ancestors)
+accounts/models.py:71:4: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/models.py:75:4: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module accounts.permissions
+accounts/permissions.py:13:0: C0115: Missing class docstring (missing-class-docstring)
+accounts/permissions.py:21:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module accounts.serializers
+accounts/serializers.py:23:0: C0301: Line too long (108/100) (line-too-long)
+accounts/serializers.py:38:0: C0115: Missing class docstring (missing-class-docstring)
+accounts/serializers.py:45:0: C0115: Missing class docstring (missing-class-docstring)
+accounts/serializers.py:45:0: W0223: Method 'create' is abstract in class 'BaseSerializer' but is not overridden in child class 'RegisterSerializer' (abstract-method)
+accounts/serializers.py:45:0: W0223: Method 'update' is abstract in class 'BaseSerializer' but is not overridden in child class 'RegisterSerializer' (abstract-method)
+accounts/serializers.py:67:0: C0115: Missing class docstring (missing-class-docstring)
+accounts/serializers.py:67:0: W0223: Method 'create' is abstract in class 'BaseSerializer' but is not overridden in child class 'LoginSerializer' (abstract-method)
+accounts/serializers.py:67:0: W0223: Method 'update' is abstract in class 'BaseSerializer' but is not overridden in child class 'LoginSerializer' (abstract-method)
+************* Module accounts.test_auth
+accounts/test_auth.py:26:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:30:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:30:13: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:43:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:54:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:62:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:72:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:86:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:86:42: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:99:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:99:69: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:112:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:112:51: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:121:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:121:53: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:131:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:131:50: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:141:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:141:49: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:156:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:156:47: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:171:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:171:35: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:186:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:186:27: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:193:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:193:56: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:203:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:203:44: W0621: Redefining name 'api' from outer scope (line 26) (redefined-outer-name)
+accounts/test_auth.py:216:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_auth.py:223:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module accounts.test_register_user
+accounts/test_register_user.py:27:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_register_user.py:43:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_register_user.py:60:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_register_user.py:72:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_register_user.py:85:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/test_register_user.py:100:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module accounts.tests
+accounts/tests.py:11:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/tests.py:22:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/tests.py:28:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/tests.py:37:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/tests.py:47:0: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/tests.py:69:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module accounts.views
+accounts/views.py:24:0: C0301: Line too long (107/100) (line-too-long)
+accounts/views.py:56:0: C0301: Line too long (105/100) (line-too-long)
+accounts/views.py:34:4: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/views.py:40:12: W0707: Consider explicitly re-raising using 'except Exception as exc' and 'raise ValidationError({'email': [EMAIL_TAKEN_MESSAGE]}) from exc' (raise-missing-from)
+accounts/views.py:50:4: C0116: Missing function or method docstring (missing-function-docstring)
+accounts/views.py:70:4: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module analytics.apps
+analytics/apps.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+analytics/apps.py:4:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module analytics.models
+analytics/models.py:2:0: C0301: Line too long (126/100) (line-too-long)
+************* Module assignments.apps
+assignments/apps.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+assignments/apps.py:4:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module assignments.models
+assignments/models.py:2:0: C0301: Line too long (131/100) (line-too-long)
+************* Module classrooms.apps
+classrooms/apps.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+classrooms/apps.py:4:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module classrooms.models
+classrooms/models.py:2:0: C0301: Line too long (126/100) (line-too-long)
+************* Module config.settings
+config/settings.py:143:0: C0301: Line too long (101/100) (line-too-long)
+config/settings.py:21:0: C0116: Missing function or method docstring (missing-function-docstring)
+config/settings.py:28:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module config.settings_test
+config/settings_test.py:21:0: W0401: Wildcard import config.settings (wildcard-import)
+config/settings_test.py:21:0: C0413: Import "from config.settings import *" should be placed at the top of the module (wrong-import-position)
+config/settings_test.py:21:0: W0614: Unused import(s) BASE_DIR, env_bool, env_list, DEBUG, SECRET_KEY, ALLOWED_HOSTS, INSTALLED_APPS, MIDDLEWARE, ROOT_URLCONF, TEMPLATES, WSGI_APPLICATION, DB_ENGINE, DATABASES, DEFAULT_AUTO_FIELD, AUTH_USER_MODEL, AUTH_PASSWORD_VALIDATORS, REST_FRAMEWORK, SIMPLE_JWT, LANGUAGE_CODE, TIME_ZONE, USE_I18N, USE_TZ, STATIC_URL, STATIC_ROOT, MEDIA_URL, MEDIA_ROOT, timedelta and ImproperlyConfigured from wildcard import of config.settings (unused-wildcard-import)
+************* Module config.tests
+config/tests.py:8:0: C0116: Missing function or method docstring (missing-function-docstring)
+config/tests.py:16:0: C0116: Missing function or method docstring (missing-function-docstring)
+************* Module config.views
+config/views.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+************* Module grading.apps
+grading/apps.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+grading/apps.py:4:0: C0115: Missing class docstring (missing-class-docstring)
+************* Module grading.models
+grading/models.py:2:0: C0301: Line too long (106/100) (line-too-long)
+************* Module manage
+manage.py:11:8: C0415: Import outside toplevel (django.core.management.execute_from_command_line) (import-outside-toplevel)
+
+-----------------------------------
+Your code has been rated at 8.06/10

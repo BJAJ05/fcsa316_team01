@@ -11,6 +11,8 @@ from rest_framework.permissions import BasePermission
 
 
 class IsTeacher(BasePermission):
+    """Allows the request only for a logged-in teacher."""
+
     message = "Энэ үйлдлийг зөвхөн багш хийх боломжтой."
 
     def has_permission(self, request, view):
@@ -19,6 +21,8 @@ class IsTeacher(BasePermission):
 
 
 class IsStudent(BasePermission):
+    """Allows the request only for a logged-in student."""
+
     message = "Энэ үйлдлийг зөвхөн сурагч хийх боломжтой."
 
     def has_permission(self, request, view):

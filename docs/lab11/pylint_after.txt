@@ -1,0 +1,4 @@
+$ cd backend && pylint $(git ls-files "*.py" | grep -v "/migrations/")
+
+-------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 8.06/10, +1.94)

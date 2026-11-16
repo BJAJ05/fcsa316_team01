@@ -21,7 +21,8 @@ INVALID_CREDENTIALS_MESSAGE = "Имэйл эсвэл нууц үг буруу б
 
 def _auth_response(user, status_code):
     """{user, access, refresh} — the same shape for register and login."""
-    return Response({"user": UserSerializer(user).data, **services.issue_tokens(user)}, status=status_code)
+    body = {"user": UserSerializer(user).data, **services.issue_tokens(user)}
+    return Response(body, status=status_code)
 
 
 class RegisterView(APIView):
@@ -32,12 +33,13 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Create the user and return it with a JWT pair."""
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             user = services.register_user(**serializer.validated_data)
-        except services.EmailAlreadyRegistered:
-            raise ValidationError({"email": [EMAIL_TAKEN_MESSAGE]})
+        except services.EmailAlreadyRegistered as exc:
+            raise ValidationError({"email": [EMAIL_TAKEN_MESSAGE]}) from exc
         return _auth_response(user, status.HTTP_201_CREATED)
 
 
@@ -48,12 +50,15 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Check email + password and return the user with a JWT pair."""
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             user = services.login_user(**serializer.validated_data)
         except services.InvalidCredentials:
-            return Response({"detail": INVALID_CREDENTIALS_MESSAGE}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": INVALID_CREDENTIALS_MESSAGE}, status=status.HTTP_401_UNAUTHORIZED
+            )
         return _auth_response(user, status.HTTP_200_OK)
 
 
@@ -68,4 +73,5 @@ class MeView(APIView):
     """GET /api/auth/me/ → the logged-in user {id, email, role} (needs a token)."""
 
     def get(self, request):
+        """Return the user that the access token belongs to."""
         return Response(UserSerializer(request.user).data)

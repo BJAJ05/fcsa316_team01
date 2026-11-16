@@ -19,6 +19,7 @@ load_dotenv(BASE_DIR / ".env")
 
 
 def env_bool(name, default=False):
+    """Read a true/false environment variable (1/true/yes/on)."""
     value = os.environ.get(name)
     if value is None:
         return default
@@ -26,6 +27,7 @@ def env_bool(name, default=False):
 
 
 def env_list(name, default=""):
+    """Read a comma-separated environment variable as a list."""
     return [item.strip() for item in os.environ.get(name, default).split(",") if item.strip()]
 
 
@@ -140,7 +142,9 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     # JWT only. Session auth is left out on purpose: being logged in to /admin/ would
     # otherwise make the API demand a CSRF token from the React app.
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
