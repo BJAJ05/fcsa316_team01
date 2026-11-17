@@ -1,0 +1,47 @@
+# Dependabot: every Saturday, checks for newer versions of our dependencies and opens
+# pull requests that update them. It never merges anything: each PR runs CI (lint, tests, build)
+# like any other PR, and a teammate merges it when green or closes it when the update breaks something.
+#   - Minor and patch updates are grouped into one PR per ecosystem; a major update gets its own PR.
+#   - At most 2 open PRs per ecosystem.
+#   - Security fixes are separate and come right away, once "Dependabot alerts" and
+#     "Dependabot security updates" are on in Settings → Code security.
+#   - Docker base images (python, node, nginx, postgres) are not watched; update them by hand.
+version: 2
+updates:
+  # backend/requirements.txt and requirements-dev.txt (the `name==x.y.z` pins)
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: saturday
+    open-pull-requests-limit: 2
+    groups:
+      python-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # Stay on Django 5.2 LTS: moving to a new major version is a team decision.
+      - dependency-name: Django
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: saturday
+    open-pull-requests-limit: 2
+    groups:
+      npm-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: saturday
+    open-pull-requests-limit: 2
+    groups:
+      actions-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
