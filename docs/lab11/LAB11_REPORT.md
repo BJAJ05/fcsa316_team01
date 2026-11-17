@@ -58,13 +58,17 @@ ESLint)-ийг суулгасны **өмнө ба дараа** хоёуланд 
 production-д яг ижлээр суулгагдана. Шинэ эмзэг байдал хожим нийтлэгдэж болох тул scan-ийг
 тогтмол (жишээ нь sprint бүрд, эсвэл GitHub Dependabot-оор) давтахыг санал болгож байна.
 
+**Dependabot** (`.github/dependabot.yml`): долоо хоног бүрийн бямба гарагт `backend`-ийн Python сан,
+`frontend`-ийн npm сан, CI-ийн GitHub Actions-ийн шинэ хувилбарыг шалгаж, шинэчлэх PR нээнэ (төрөл
+бүрд нээлттэй PR 2-оос ихгүй). PR бүр CI-ийг (lint, тест, build) давж байж merge хийгдэнэ.
+
 ## 3. CI pipeline-д нэгтгэсэн нь
 
 `.github/workflows/ci.yml`-д 2 алхам нэмсэн. Аль нэг linter асуудал олбол job улаан болно.
 
 | Job | Шинэ алхам | Команд |
 |---|---|---|
-| backend | **Lint (Pylint)** — "Install dependencies"-ийн дараа | `pylint $(git ls-files '*.py' \| grep -v '/migrations/')` |
+| backend | **Lint (Pylint)** — "Install dependencies"-ийн дараа | `pylint .` (`.pylintrc`: `recursive=yes`, `migrations`, `venv`-ийг алгасна) |
 | frontend | **Lint (ESLint)** — "Install dependencies"-ийн дараа | `npx eslint --max-warnings=0 .` |
 
 Pylint, pylint-django, pip-audit-ийг `backend/requirements-dev.txt`-д, ESLint-ийг
@@ -85,11 +89,11 @@ Pylint, pylint-django, pip-audit-ийг `backend/requirements-dev.txt`-д, ESLin
 # Backend
 cd backend
 pip install -r requirements-dev.txt
-pylint $(git ls-files '*.py' | grep -v '/migrations/')
+pylint .
 pip-audit -r requirements.txt -r requirements-dev.txt
 
 # Frontend
-cd frontend
+cd ../frontend
 npm ci
 npm run lint
 npm audit

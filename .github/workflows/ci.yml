@@ -68,9 +68,10 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
-      # Lab 11: static analysis. Rules are in backend/.pylintrc; any message fails the job.
+      # Static analysis. Rules are in backend/.pylintrc (recursive; migrations and
+      # venv are skipped there); any message fails the job.
       - name: Lint (Pylint)
-        run: pylint $(git ls-files '*.py' | grep -v '/migrations/')
+        run: pylint .
 
       # Fails when a model was changed but its migration was not committed.
       - name: Check for missing migrations
@@ -103,7 +104,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Lab 11: static analysis. Rules are in frontend/eslint.config.js; warnings fail the job too.
+      # Static analysis. Rules are in frontend/eslint.config.js; warnings fail the job too.
       - name: Lint (ESLint)
         run: npx eslint --max-warnings=0 .
 

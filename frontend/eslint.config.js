@@ -1,4 +1,4 @@
-// ESLint configuration for the LMS React frontend (Lab 11).
+// ESLint configuration for the LMS React frontend.
 // Base rule set: @eslint/js "recommended" + React Hooks rules + React Refresh (Vite) rules.
 import js from '@eslint/js';
 import globals from 'globals';
