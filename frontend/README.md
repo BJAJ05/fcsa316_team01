@@ -30,6 +30,8 @@ npm run dev
 | `npm run dev` | Хөгжүүлэлтийн сервер (код өөрчлөхөд автоматаар шинэчлэгдэнэ) |
 | `npm run build` | `dist/` хавтсанд production build хийх |
 | `npm run preview` | Build хийсэн хувилбарыг локал ажиллуулж шалгах |
+| `npm run lint` | ESLint-ээр кодыг шалгах (`eslint.config.js`); алдаагүй байх ёстой (CI шалгана) |
+| `npm audit` | Сангуудад мэдэгдэж буй эмзэг байдал бий эсэхийг шалгах |
 
 ## 3. Бүтэц
 
@@ -105,3 +107,5 @@ const { user, logout } = useAuth()   // user = { id, email, role: 'teacher' | 's
 - Шинэ сан нэмэхдээ `npm install <сан>` ажиллуулж, **`package.json` болон `package-lock.json` хоёуланг**
   commit хийнэ.
 - `node_modules/`, `dist/`-ийг commit хийхгүй (`.gitignore`-д орсон).
+- PR нээхээс өмнө `npm run lint`, `npm run build` хоёулаа алдаагүй ажиллах ёстой. ESLint-ийн дүрмийг
+  тодорхой мөрөнд үл хэрэгсэх бол `// eslint-disable-next-line <дүрэм>`-ийн дээр шалтгааныг бичнэ.

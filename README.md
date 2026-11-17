@@ -121,15 +121,32 @@ docker compose up -d --build   # анх удаа эсвэл код өөрчил�
 1. `main`-ийг шинэчилнэ: `git checkout main`, `git pull`
 2. User Story бүрд шинэ branch, нэр нь story-ийн дугаар: `git checkout -b us03` (US-03-ийн хувьд)
    (лабораторийн ажил бол `labNN-...`, жишээ нь `lab07-ci`; засвар бол `fix/...`)
-3. Жижиг, утга бүхий commit хийнэ. Push хийгээд GitHub дээр `main` руу **Pull Request** нээнэ.
-   PR-ын тайлбарт User Story-ийн (эсвэл лабын) дугаарыг бичнэ.
-4. **CI** ногоон болмогц PR-ын зохиогч merge хийнэ. Багийн өөр гишүүн code review хийвэл сайн,
+3. Жижиг, утга бүхий commit хийнэ. PR нээхээс өмнө локал дээр шалгана: `backend/`-д `pylint .`,
+   `pytest`; `frontend/`-д `npm run lint`, `npm run build`.
+4. Push хийгээд GitHub дээр `main` руу **Pull Request** нээнэ. PR-ын тайлбарт User Story-ийн
+   (эсвэл лабын) дугаарыг бичнэ.
+5. **CI** ногоон болмогц PR-ын зохиогч merge хийнэ. Багийн өөр гишүүн code review хийвэл сайн,
    гэхдээ review-г хүлээхгүй.
-5. `main` руу шууд push хийхгүй.
+6. `main` руу шууд push хийхгүй.
 
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) нь PR бүр болон `main` руу merge бүрд
-backend-ийн migration шалгалт, тест, coverage-ийг (PostgreSQL 16 дээр), frontend-ийн build-ийг ажиллуулна.
-CI улаан бол merge хийхгүй — алдааг засаад дахин push хийнэ.
+backend-ийн Pylint, migration шалгалт, тест, coverage-ийг (PostgreSQL 16 дээр), frontend-ийн ESLint,
+build-ийг ажиллуулна. CI улаан бол merge хийхгүй — алдааг засаад дахин push хийнэ.
+
+Dependabot ([`.github/dependabot.yml`](.github/dependabot.yml)) бямба гараг бүр сангуудын шинэ
+хувилбарыг шалгаж, шинэчлэх PR нээнэ. Эдгээр PR мөн CI-аар шалгагдана: ногоон бол багийн аль ч гишүүн
+merge хийнэ, улаан бол хаана (эсвэл кодыг засна).
+
+### Хийгдсэн гэж үзэх шалгуур (Definition of Done)
+
+User Story (эсвэл лабын ажил)-ийг дараах бүгд хангагдсан үед л **Done** руу шилжүүлнэ:
+
+- [ ] Хүлээн авах шалгуур (acceptance criteria) хангагдсан; Product Owner `main` дээр шалгасан.
+- [ ] Шинэ бизнес логик (`services.py`) unit тесттэй; `pytest` бүх тест **тэгц** давсан.
+- [ ] `pylint .` 10.00/10, `npm run lint` алдаагүй, `npm run build` амжилттай (CI ногоон).
+- [ ] Model өөрчилсөн бол migration commit хийгдсэн; шинэ API бол `backend/README.md`-ийн хүснэгт
+      шинэчлэгдсэн.
+- [ ] PR нээж, багийн гишүүнээс review хүссэн (review-г хүлээхгүй, CI ногоон бол merge хийнэ).
 
 GitHub Projects самбар дээрх картыг ажлын явцын дагуу (In Progress → Review → Done) шилжүүлнэ.
 
@@ -144,5 +161,5 @@ GitHub Projects самбар дээрх картыг ажлын явцын да�
 | 8 | Dockerfile, Docker Compose | **Хийгдсэн:** `backend/Dockerfile` (gunicorn, WhiteNoise), `frontend/Dockerfile` (2 шаттай build → nginx), `docker-compose.yml` (db, backend, frontend) — дээрх "Docker-оор ажиллуулах" хэсгийг үзнэ үү |
 | 9 | Minikube | **Хийгдсэн:** `k8s/` — PostgreSQL (volume), migration Job, backend 3 replica (`/api/health/` readiness probe), NodePort Service-үүд, frontend — дээрх "Kubernetes (Minikube)" хэсгийг үзнэ үү |
 | 10 | Автомат тест | **Хийгдсэн:** `backend/accounts/test_register_user.py` — `register_user()`-ийн unit тест (Arrange/Act/Assert; энгийн, хязгаарын, mock тохиолдол), `pytest-cov`-оор coverage, CI-д `pytest --cov` |
-| 11 | Статик шинжилгээ | Linter-ийг санаатайгаар тохируулаагүй — энэ лабаар нэмнэ |
+| 11 | Статик шинжилгээ | **Хийгдсэн:** Pylint (`backend/.pylintrc`), ESLint (`frontend/eslint.config.js`), pip-audit / npm audit, Dependabot, CI-д lint — тайлан [`docs/lab11/`](docs/lab11/LAB11_REPORT.md) |
 | 13 | Prometheus, Grafana | `/metrics` endpoint-ийг энэ лабаар нэмнэ |
