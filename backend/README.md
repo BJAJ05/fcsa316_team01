@@ -101,6 +101,15 @@ Coverage-д юу тооцогдохыг `pyproject.toml`-д тохируулса
 (`config/settings_test.py`). CI (GitHub Actions) дээр орчны хувьсагчаар PostgreSQL 16 service-ийг
 ашиглана (`.github/workflows/ci.yml`).
 
+### Lint, сангийн аюулгүй байдал
+```bash
+pylint .                                               # кодын чанар; 10.00/10 байх ёстой (CI шалгана)
+pip-audit -r requirements.txt -r requirements-dev.txt  # сангуудад мэдэгдэж буй эмзэг байдал бий эсэх
+```
+Pylint-ийн дүрэм `.pylintrc`-д (pylint-django plugin, мөрийн урт 100, `migrations/`, `venv/`-ийг
+алгасна). Дүрмийг тодорхой мөрөнд үл хэрэгсэх бол `# pylint: disable=<нэр>`-ийн хажууд шалтгааныг
+заавал бичнэ.
+
 ### Docker image
 
 `Dockerfile` нь gunicorn-оор API-г ажиллуулна (`DEBUG=False`, admin-ий CSS-ийг WhiteNoise өгнө).
@@ -124,7 +133,9 @@ backend/
 ├── grading/           # Илгээлт, автомат дүгнэлт, алдаа давтах
 ├── analytics/         # Сурагчийн ахиц, багшийн тайлан
 ├── requirements.txt       # Ажиллахад шаардлагатай сангууд
-├── requirements-dev.txt   # + тестийн сангууд
+├── requirements-dev.txt   # + тест, lint, pip-audit
+├── pyproject.toml         # pytest, coverage-ийн тохиргоо
+├── .pylintrc              # Pylint-ийн дүрэм
 └── .env.example           # .env-ийн загвар
 ```
 

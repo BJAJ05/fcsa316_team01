@@ -1,11 +1,13 @@
-# Pylint configuration for the LMS Django backend (Lab 11).
+# Pylint configuration for the LMS Django backend.
 # Base rule set: pylint defaults + the pylint-django plugin, which teaches
 # pylint about Django models, managers and settings.
 
 [MAIN]
 load-plugins=pylint_django
 django-settings-module=config.settings_test
-# Auto-generated code is not linted.
+# `pylint .` walks every folder (works the same in bash and PowerShell).
+recursive=yes
+# Auto-generated code and installed packages are not linted.
 ignore=migrations,venv,.venv
 jobs=0
 
