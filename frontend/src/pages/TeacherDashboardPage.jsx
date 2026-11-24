@@ -103,7 +103,7 @@ export default function TeacherDashboardPage() {
           {classes.map((classroom) => (
             <li className="status" key={classroom.id}>
               <strong>{classroom.name}</strong> · {classroom.subject} — Нэгдэх код:{' '}
-              <strong>{classroom.code}</strong>
+              <strong>{classroom.code}</strong> · {classroom.student_count} сурагч
             </li>
           ))}
         </ul>
