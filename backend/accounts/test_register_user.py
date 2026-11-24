@@ -9,12 +9,10 @@ Each test is laid out as Arrange / Act / Assert.
 from unittest.mock import patch
 
 import pytest
-from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
+from accounts.models import User
 from accounts.services import EmailAlreadyRegistered, register_user
-
-User = get_user_model()
 
 PASSWORD = "a-Strong-pass-123"
 

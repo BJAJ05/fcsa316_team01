@@ -3,12 +3,10 @@
 from unittest.mock import patch
 
 import pytest
-from django.contrib.auth import get_user_model
 
+from accounts.models import User
 from classrooms.models import Classroom
 from classrooms.services import CLASS_CODE_ALPHABET, create_class, list_teacher_classes
-
-User = get_user_model()
 
 pytestmark = pytest.mark.django_db
 

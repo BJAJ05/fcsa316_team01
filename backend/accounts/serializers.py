@@ -1,11 +1,10 @@
 """Presentation layer for `accounts`: input validation and response shapes (US-01)."""
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
-User = get_user_model()
+from .models import User
 
 EMAIL_ERRORS = {
     "required": "Имэйлээ оруулна уу.",

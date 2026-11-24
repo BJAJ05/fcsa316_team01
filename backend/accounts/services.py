@@ -6,11 +6,11 @@ Plain functions so they can be unit tested without HTTP. Views call these
 functions; these functions use the models.
 """
 
-from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth import authenticate
 from django.db import IntegrityError, transaction
 from rest_framework_simplejwt.tokens import RefreshToken
 
-User = get_user_model()
+from .models import User
 
 
 class EmailAlreadyRegistered(Exception):

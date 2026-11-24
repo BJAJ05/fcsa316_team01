@@ -3,19 +3,18 @@ Tests for US-01: role-based registration, login and JWT (services, API, permissi
 The unit tests for register_user() itself are in test_register_user.py.
 """
 
-from types import SimpleNamespace
-
 import pytest
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
-from rest_framework.test import APIClient
+from rest_framework.request import Request
+from rest_framework.test import APIClient, APIRequestFactory
+from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import AccessToken
 
 from accounts import services
+from accounts.models import User
 from accounts.permissions import IsStudent, IsTeacher
-
-User = get_user_model()
 
 PASSWORD = "a-Strong-pass-123"
 EMAIL_TAKEN = "Энэ имэйл бүртгэлтэй байна."
@@ -74,7 +73,10 @@ def test_login_user_rejects_inactive_user():
 def test_issue_tokens_puts_role_and_email_in_access_token():
     user = services.register_user("teacher@example.com", PASSWORD, User.Role.TEACHER)
 
-    access = AccessToken(services.issue_tokens(user)["access"])
+    raw_access = services.issue_tokens(user)["access"]
+
+    # Decoded the way the API does it for every request (it also checks the signature and type).
+    access = JWTAuthentication().get_validated_token(raw_access.encode())
 
     assert access["role"] == "teacher"
     assert access["email"] == "teacher@example.com"
@@ -178,7 +180,7 @@ def test_me_returns_logged_in_user(api):
 
     assert response.status_code == 200
     assert response.json() == {
-        "id": User.objects.get().id,
+        "id": User.objects.get().pk,
         "email": "student@example.com",
         "role": "student",
     }
@@ -211,19 +213,26 @@ def test_refresh_with_bad_token_returns_401(api):
 # --- permissions.py ----------------------------------------------------------
 
 
+def request_from(user):
+    """A DRF request made by `user`, for calling a permission class directly."""
+    request = Request(APIRequestFactory().get("/"))
+    request.user = user
+    return request
+
+
 @pytest.mark.parametrize(
     "role, teacher_allowed, student_allowed",
     [("teacher", True, False), ("student", False, True)],
 )
 def test_role_permissions(role, teacher_allowed, student_allowed):
-    request = SimpleNamespace(user=User(email="x@example.com", role=role))
+    request = request_from(User(email="x@example.com", role=role))
 
-    assert IsTeacher().has_permission(request, None) is teacher_allowed
-    assert IsStudent().has_permission(request, None) is student_allowed
+    assert IsTeacher().has_permission(request, APIView()) is teacher_allowed
+    assert IsStudent().has_permission(request, APIView()) is student_allowed
 
 
 def test_role_permissions_deny_anonymous_user():
-    request = SimpleNamespace(user=AnonymousUser())
+    request = request_from(AnonymousUser())
 
-    assert not IsTeacher().has_permission(request, None)
-    assert not IsStudent().has_permission(request, None)
+    assert not IsTeacher().has_permission(request, APIView())
+    assert not IsStudent().has_permission(request, APIView())

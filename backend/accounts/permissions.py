@@ -9,7 +9,11 @@ Role-based permissions (US-01). Use them in views of other apps, e.g.
 
 from rest_framework.permissions import BasePermission
 
+from .models import User
 
+
+# A visitor without a valid token is an AnonymousUser, not a User, so the isinstance()
+# checks below refuse them (and tell the editor that `user` has `is_teacher`/`is_student`).
 class IsTeacher(BasePermission):
     """Allows the request only for a logged-in teacher."""
 
@@ -17,7 +21,7 @@ class IsTeacher(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.is_teacher)
+        return isinstance(user, User) and user.is_teacher
 
 
 class IsStudent(BasePermission):
@@ -27,4 +31,4 @@ class IsStudent(BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return bool(user and user.is_authenticated and user.is_student)
+        return isinstance(user, User) and user.is_student
