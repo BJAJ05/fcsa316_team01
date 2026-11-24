@@ -6,23 +6,34 @@ call functions in `services.py`. Keep business logic out of views.
 """
 
 from rest_framework import status
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.permissions import IsTeacher
+from accounts.permissions import IsStudent, IsTeacher
 
 from . import services
-from .serializers import ClassroomSerializer, CreateClassSerializer
+from .serializers import ClassroomSerializer, CreateClassSerializer, JoinClassSerializer
+
+CLASS_NOT_FOUND_MESSAGE = "Анги олдсонгүй."
+CODE_NOT_FOUND_MESSAGE = "Ангийн код олдсонгүй."
+ALREADY_ENROLLED_MESSAGE = "Та энэ ангид аль хэдийн элссэн байна."
 
 
 class ClassListCreateView(APIView):
-    """GET/POST /api/classes/ — list a teacher's classes or create one."""
+    """
+    GET /api/classes/  → the user's classes (a teacher's own, or the ones a student joined).
+    POST /api/classes/ → a teacher creates a class (US-02).
+    """
 
-    permission_classes = [IsTeacher]
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsTeacher()]
+        return super().get_permissions()  # any logged-in user
 
     def get(self, request):
-        """Return only the authenticated teacher's classes."""
-        classes = services.list_teacher_classes(request.user)
+        """Return the classes this user teaches or has joined."""
+        classes = services.list_classes(request.user)
         return Response(ClassroomSerializer(classes, many=True).data)
 
     def post(self, request):
@@ -34,3 +45,33 @@ class ClassListCreateView(APIView):
             ClassroomSerializer(classroom).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class ClassDetailView(APIView):
+    """GET /api/classes/<id>/ → one class; 404 unless the user teaches it or has joined it."""
+
+    def get(self, request, class_id):
+        """Return the class if this user may see it."""
+        try:
+            classroom = services.get_class(request.user, class_id)
+        except services.ClassNotFound as exc:
+            raise NotFound(CLASS_NOT_FOUND_MESSAGE) from exc
+        return Response(ClassroomSerializer(classroom).data)
+
+
+class JoinClassView(APIView):
+    """POST /api/classes/join/ {code} → a student joins a class with its code (US-03)."""
+
+    permission_classes = [IsStudent]
+
+    def post(self, request):
+        """Enroll the student and return the joined class."""
+        serializer = JoinClassSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            classroom = services.join_class(request.user, serializer.validated_data["code"])
+        except services.ClassNotFound as exc:
+            raise NotFound(CODE_NOT_FOUND_MESSAGE) from exc
+        except services.AlreadyEnrolled as exc:
+            raise ValidationError({"code": [ALREADY_ENROLLED_MESSAGE]}) from exc
+        return Response(ClassroomSerializer(classroom).data, status=status.HTTP_201_CREATED)
