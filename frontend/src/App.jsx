@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import StudentClassPage from './pages/StudentClassPage.jsx'
 import StudentDashboardPage from './pages/StudentDashboardPage.jsx'
 import TeacherDashboardPage from './pages/TeacherDashboardPage.jsx'
 
@@ -30,6 +31,14 @@ export default function App() {
           element={
             <RequireAuth role="student">
               <StudentDashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="student/classes/:classId"
+          element={
+            <RequireAuth role="student">
+              <StudentClassPage />
             </RequireAuth>
           }
         />

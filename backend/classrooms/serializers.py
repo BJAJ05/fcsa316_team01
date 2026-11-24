@@ -18,6 +18,12 @@ SUBJECT_ERRORS = {
     "invalid": "Хичээлийн нэр буруу байна.",
     "max_length": "Хичээлийн нэр {max_length} тэмдэгтээс урт байж болохгүй.",
 }
+CODE_ERRORS = {
+    "required": "Ангийн кодыг оруулна уу.",
+    "blank": "Ангийн кодыг оруулна уу.",
+    "null": "Ангийн кодыг оруулна уу.",
+    "invalid": "Ангийн код буруу байна.",
+}
 
 
 # Input-only serializer: it validates data and never saves it itself
@@ -29,10 +35,20 @@ class CreateClassSerializer(serializers.Serializer):  # pylint: disable=abstract
     subject = serializers.CharField(max_length=100, error_messages=SUBJECT_ERRORS)
 
 
+class JoinClassSerializer(serializers.Serializer):  # pylint: disable=abstract-method
+    """Validate the class code a student types to join a class (US-03)."""
+
+    # Spaces around the code are removed here; services.join_class() also uppercases it.
+    code = serializers.CharField(error_messages=CODE_ERRORS)
+
+
 class ClassroomSerializer(serializers.ModelSerializer):
-    """Class details returned to its teacher, including the student join code."""
+    """A class as its teacher and its students see it, including the join code."""
+
+    teacher_email = serializers.EmailField(source="teacher.email", read_only=True)
+    student_count = serializers.IntegerField(source="enrollments.count", read_only=True)
 
     class Meta:
         model = Classroom
-        fields = ("id", "name", "subject", "code", "created_at")
+        fields = ("id", "name", "subject", "code", "teacher_email", "student_count", "created_at")
         read_only_fields = fields
