@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('subject', models.CharField(max_length=100, verbose_name='subject')),
                 ('code', models.CharField(editable=False, max_length=6, unique=True, verbose_name='class code')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='classrooms', to=settings.AUTH_USER_MODEL)),
+                ('teacher', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='taught_classes', to=settings.AUTH_USER_MODEL)),
             ],
         ),
     ]

@@ -13,7 +13,7 @@ class Classroom(models.Model):
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="classrooms",
+        related_name="taught_classes",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

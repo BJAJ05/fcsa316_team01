@@ -71,6 +71,25 @@ def test_create_class_requires_nonblank_name_and_subject():
     assert not Classroom.objects.exists()
 
 
+def test_create_class_rejects_too_long_or_null_values_in_mongolian():
+    teacher = make_user("teacher@example.com", User.Role.TEACHER)
+    client = APIClient()
+    client.force_authenticate(user=teacher)
+
+    response = client.post(
+        "/api/classes/",
+        {"name": "x" * 101, "subject": None},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "name": ["Ангийн нэр 100 тэмдэгтээс урт байж болохгүй."],
+        "subject": ["Хичээлийн нэрээ оруулна уу."],
+    }
+    assert not Classroom.objects.exists()
+
+
 def test_teacher_list_only_includes_their_own_classes():
     first_teacher = make_user("first@example.com", User.Role.TEACHER)
     second_teacher = make_user("second@example.com", User.Role.TEACHER)

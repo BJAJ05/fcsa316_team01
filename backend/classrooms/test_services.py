@@ -6,7 +6,7 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from classrooms.models import Classroom
-from classrooms.services import create_class, list_teacher_classes
+from classrooms.services import CLASS_CODE_ALPHABET, create_class, list_teacher_classes
 
 User = get_user_model()
 
@@ -27,8 +27,8 @@ def test_create_class_assigns_teacher_and_generates_six_character_code():
     assert saved.name == "Biology 101"
     assert saved.subject == "Biology"
     assert len(saved.code) == 6
-    assert saved.code.isalnum()
-    assert saved.code.isupper()
+    # Only A–Z and 0–9. (Not `isupper()`: it is False for an all-digit code such as "123456".)
+    assert set(saved.code) <= set(CLASS_CODE_ALPHABET)
 
 
 def test_create_class_retries_when_generated_code_is_already_in_use():
