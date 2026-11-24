@@ -1,10 +1,9 @@
 """Tests for the custom email-based User model and its admin pages."""
 
 import pytest
-from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-User = get_user_model()
+from accounts.models import User
 
 
 @pytest.mark.django_db

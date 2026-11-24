@@ -197,7 +197,13 @@ HTTP-гүйгээр unit тестлэх боломжтой.
 ## 6. Багийн дүрэм
 
 - **Хэрэглэгчийн model:** `accounts.User` (имэйлээр нэвтэрдэг, `username` байхгүй). ForeignKey-д
-  `settings.AUTH_USER_MODEL`, код дотор `get_user_model()` ашиглана.
+  `settings.AUTH_USER_MODEL`, код дотор `from accounts.models import User` ашиглана.
+  (`get_user_model()`-ийг VS Code зөвхөн Django-гийн ерөнхий хэрэглэгч гэж таньдаг тул `User.Role`,
+  `user.is_teacher` зэрэг дээр алдаа заадаг.)
+- **Төрлийн шалгалт (VS Code / Pylance):** `requirements-dev.txt`-ийн `django-stubs`,
+  `djangorestframework-stubs` нь Django, DRF-ийн төрлийг editor-т өгнө. VS Code дээр backend-ийн
+  `venv`-ийг Python interpreter болгон сонгосон байх ёстой. Алдааг `# type: ignore`-оор нуухгүй, кодыг
+  засна.
 - **Эрх:** API нь анхдагчаар нэвтэрсэн хэрэглэгч шаарддаг. Бүртгэл, нэвтрэлт зэрэг нээлттэй endpoint-д
   `permission_classes = [AllowAny]` гэж тодорхой бичнэ.
 - **URL:** бүх API зам `/`-ээр төгсөнө (`POST /api/auth/register/`).

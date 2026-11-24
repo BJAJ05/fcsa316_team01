@@ -1,12 +1,10 @@
 """API tests for classroom creation and teacher-only access."""
 
 import pytest
-from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
+from accounts.models import User
 from classrooms.models import Classroom
-
-User = get_user_model()
 
 pytestmark = pytest.mark.django_db
 

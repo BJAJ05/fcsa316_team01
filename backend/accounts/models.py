@@ -1,10 +1,13 @@
 """Custom User model: login with email, and a teacher/student role (US-01)."""
 
+from typing import ClassVar
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
-class UserManager(BaseUserManager):
+# BaseUserManager["User"]: tells the editor that this manager creates and returns `User`.
+class UserManager(BaseUserManager["User"]):
     """Creates users identified by email instead of username."""
 
     use_in_migrations = True
@@ -48,8 +51,9 @@ class User(AbstractUser):
     """
     Project user model (settings.AUTH_USER_MODEL). Users log in with email + password.
 
-    Always refer to it as `settings.AUTH_USER_MODEL` in ForeignKeys and
-    `get_user_model()` in code, never `django.contrib.auth.models.User`.
+    Refer to it as `settings.AUTH_USER_MODEL` in ForeignKeys and import it in code with
+    `from accounts.models import User` (not `get_user_model()`, which the editor only knows as
+    Django's generic user), never `django.contrib.auth.models.User`.
     Every user is either a teacher or a student (`role`, US-01). Check it with
     `user.is_teacher` / `user.is_student`, or the IsTeacher/IsStudent permissions in API views.
     """
@@ -60,7 +64,8 @@ class User(AbstractUser):
         TEACHER = "teacher", "Багш"
         STUDENT = "student", "Сурагч"
 
-    username = None
+    # Setting it to None removes AbstractUser's username field: users log in with their email.
+    username: None = None
     email = models.EmailField("email address", unique=True)
     # Default is the role with fewer rights; registration always sets it explicitly.
     role = models.CharField("role", max_length=16, choices=Role.choices, default=Role.STUDENT)
@@ -68,7 +73,7 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    objects = UserManager()
+    objects: ClassVar[UserManager] = UserManager()
 
     def __str__(self):
         return self.email

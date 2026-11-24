@@ -5,3 +5,6 @@ pytest-django==4.14.0
 pylint==4.1.4
 pylint-django==2.8.0
 pip-audit==2.10.1
+# Type stubs: give the editor (VS Code / Pylance) the real types of Django and DRF
+django-stubs==6.1.2
+djangorestframework-stubs==3.18.2
