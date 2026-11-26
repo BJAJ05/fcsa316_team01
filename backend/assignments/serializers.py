@@ -64,6 +64,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
     is_open = serializers.BooleanField(read_only=True)
     question_count = serializers.SerializerMethodField()
+    submission = serializers.SerializerMethodField()
 
     class Meta:
         model = Assignment
@@ -75,9 +76,25 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "due_date",
             "is_open",
             "question_count",
+            "submission",
             "created_at",
         )
         read_only_fields = fields
+
+    def get_submission(self, obj):
+        """
+        The requesting student's graded submission of this assignment (US-07), or None. The view
+        passes them as context["submissions"] (grading.services.submissions_by_assignment).
+        """
+        submission = self.context.get("submissions", {}).get(obj.pk)
+        if submission is None:
+            return None
+        return {
+            "id": submission.pk,
+            "score": submission.score,
+            "max_score": submission.max_score,
+            "percent": submission.percent,
+        }
 
     def get_question_count(self, obj):
         """Counted by the services' query; counted here for a just-created assignment."""

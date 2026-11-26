@@ -1,17 +1,18 @@
 """
-Presentation / API layer for `assignments` (US-05, US-06).
+Presentation / API layer for `assignments` (US-05, US-06; US-07 adds each student's result).
 
 Views check permissions, validate input with serializers and call functions in
 `services.py`. Keep business logic out of views.
 """
 
 from rest_framework import status
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.permissions import IsTeacher
 from classrooms.services import ClassNotFound
+from grading.services import submissions_by_assignment
 
 from . import services
 from .serializers import (
@@ -26,6 +27,7 @@ from .serializers import (
 CLASS_NOT_FOUND_MESSAGE = "Анги олдсонгүй."
 ASSIGNMENT_NOT_FOUND_MESSAGE = "Даалгавар олдсонгүй."
 QUESTION_NOT_FOUND_MESSAGE = "Асуулт олдсонгүй."
+QUESTIONS_LOCKED_MESSAGE = "Илгээлт хийгдсэн тул асуултыг өөрчлөх боломжгүй."
 # Fields a teacher may change with PATCH; the class of an assignment stays the same.
 EDITABLE_FIELDS = ("title", "instructions", "due_date")
 
@@ -51,7 +53,8 @@ class AssignmentListCreateView(APIView):
             )
         except ClassNotFound as exc:
             raise NotFound(CLASS_NOT_FOUND_MESSAGE) from exc
-        return Response(AssignmentSerializer(assignments, many=True).data)
+        context = {"submissions": submissions_by_assignment(request.user, assignments)}
+        return Response(AssignmentSerializer(assignments, many=True, context=context).data)
 
     def post(self, request):
         """Create an assignment in one of the teacher's own classes."""
@@ -94,9 +97,10 @@ class AssignmentDetailView(APIView):
             TeacherQuestionSerializer if request.user.is_teacher else StudentQuestionSerializer
         )
         questions = services.list_questions(assignment)
+        context = {"submissions": submissions_by_assignment(request.user, [assignment])}
         return Response(
             {
-                **AssignmentSerializer(assignment).data,
+                **AssignmentSerializer(assignment, context=context).data,
                 "questions": question_serializer(questions, many=True).data,
             }
         )
@@ -140,6 +144,8 @@ class QuestionCreateView(APIView):
             )
         except services.AssignmentNotFound as exc:
             raise NotFound(ASSIGNMENT_NOT_FOUND_MESSAGE) from exc
+        except services.QuestionsLocked as exc:
+            raise ValidationError({"non_field_errors": [QUESTIONS_LOCKED_MESSAGE]}) from exc
         return Response(TeacherQuestionSerializer(question).data, status=status.HTTP_201_CREATED)
 
 
@@ -156,4 +162,6 @@ class QuestionDetailView(APIView):
             raise NotFound(ASSIGNMENT_NOT_FOUND_MESSAGE) from exc
         except services.QuestionNotFound as exc:
             raise NotFound(QUESTION_NOT_FOUND_MESSAGE) from exc
+        except services.QuestionsLocked as exc:
+            raise ValidationError({"non_field_errors": [QUESTIONS_LOCKED_MESSAGE]}) from exc
         return Response(status=status.HTTP_204_NO_CONTENT)
