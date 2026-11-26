@@ -114,14 +114,12 @@ POINTS_ERRORS = {
     "max_value": "Оноо {max_value}-аас их байж болохгүй.",
 }
 CHOICE_TEXT_ERRORS = {
+    "required": "Сонголтын текстийг оруулна уу.",
     "null": "Сонголтын текст буруу байна.",
     "invalid": "Сонголтын текст буруу байна.",
     "max_length": "Сонголт {max_length} тэмдэгтээс урт байж болохгүй.",
 }
-CHOICES_ERRORS = {
-    "not_a_list": "Сонголтуудыг жагсаалтаар илгээнэ үү.",
-    "null": "Сонголтуудыг жагсаалтаар илгээнэ үү.",
-}
+CHOICES_NOT_A_LIST_MESSAGE = "Сонголтуудыг жагсаалтаар илгээнэ үү."
 CORRECT_ANSWER_ERRORS = {
     "null": "Зөв хариултыг оруулна уу.",
     "invalid": "Зөв хариултыг оруулна уу.",
@@ -132,10 +130,19 @@ CORRECT_ANSWER_ERRORS = {
 class ChoiceInputSerializer(serializers.Serializer):  # pylint: disable=abstract-method
     """One option of a new multiple-choice question; empty options are dropped later."""
 
+    # Sent when an option is not an object, e.g. "choices": ["3", "4"] (DRF's default is English).
+    default_error_messages = {"invalid": "Сонголт буруу байна."}
+
     text = serializers.CharField(
         max_length=255, allow_blank=True, error_messages=CHOICE_TEXT_ERRORS
     )
-    is_correct = serializers.BooleanField(default=False)
+    is_correct = serializers.BooleanField(
+        default=False,
+        error_messages={
+            "invalid": "Сонголтын зөв эсэх буруу байна.",
+            "null": "Сонголтын зөв эсэх буруу байна.",
+        },
+    )
 
 
 class QuestionInputSerializer(serializers.Serializer):  # pylint: disable=abstract-method
@@ -149,7 +156,15 @@ class QuestionInputSerializer(serializers.Serializer):  # pylint: disable=abstra
     points = serializers.IntegerField(
         min_value=1, max_value=100, default=1, error_messages=POINTS_ERRORS
     )
-    choices = ChoiceInputSerializer(many=True, required=False, error_messages=CHOICES_ERRORS)
+    # The dict is written here so the type checker infers it as DRF's error_messages type.
+    choices = ChoiceInputSerializer(
+        many=True,
+        required=False,
+        error_messages={
+            "not_a_list": CHOICES_NOT_A_LIST_MESSAGE,
+            "null": CHOICES_NOT_A_LIST_MESSAGE,
+        },
+    )
     correct_answer = serializers.CharField(
         max_length=255,
         required=False,

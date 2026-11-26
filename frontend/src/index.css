@@ -298,3 +298,51 @@ a.card:focus-visible {
   color: var(--ok);
   font-weight: 600;
 }
+
+/* Class code with a copy button (US-04, components/ClassCode.jsx). */
+
+.class-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.class-code code {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 1.1em;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+/* Tables, e.g. the class roster (US-04); reuse for grade tables. */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.table td.table-actions {
+  text-align: right;
+}
+
+/* Text for screen readers only, e.g. the header of a column of buttons. */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

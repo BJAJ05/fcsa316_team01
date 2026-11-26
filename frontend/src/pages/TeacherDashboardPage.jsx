@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { formErrors } from '../api/formErrors.js'
 import { useAuth } from '../auth/AuthContext.js'
 import FormField from '../components/FormField.jsx'
 
-// Teacher's start page after login (US-01). US-02 lets teachers create and share classes.
+// Teacher's start page after login (US-01). US-02 lets teachers create and share classes;
+// each class opens its own page (US-04: students, US-05: assignments).
 export default function TeacherDashboardPage() {
   const { user, authFetch } = useAuth()
   const [classes, setClasses] = useState([])
@@ -102,7 +104,10 @@ export default function TeacherDashboardPage() {
         <ul className="status-list">
           {classes.map((classroom) => (
             <li className="status" key={classroom.id}>
-              <strong>{classroom.name}</strong> · {classroom.subject} — Нэгдэх код:{' '}
+              <Link to={`/teacher/classes/${classroom.id}`}>
+                <strong>{classroom.name}</strong>
+              </Link>{' '}
+              · {classroom.subject} — Нэгдэх код:{' '}
               <strong>{classroom.code}</strong> · {classroom.student_count} сурагч
             </li>
           ))}

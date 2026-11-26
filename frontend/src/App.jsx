@@ -8,6 +8,7 @@ import NotFoundPage from './pages/NotFoundPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import StudentClassPage from './pages/StudentClassPage.jsx'
 import StudentDashboardPage from './pages/StudentDashboardPage.jsx'
+import TeacherClassPage from './pages/TeacherClassPage.jsx'
 import TeacherDashboardPage from './pages/TeacherDashboardPage.jsx'
 
 // Add one <Route> per page. Pages live in src/pages/.
@@ -40,6 +41,14 @@ export default function App() {
           element={
             <RequireAuth role="student">
               <StudentClassPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="teacher/classes/:classId"
+          element={
+            <RequireAuth role="teacher">
+              <TeacherClassPage />
             </RequireAuth>
           }
         />

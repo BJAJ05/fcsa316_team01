@@ -20,6 +20,10 @@ class AlreadyEnrolled(Exception):
     """The student has already joined this class."""
 
 
+class StudentNotEnrolled(Exception):
+    """The student is not (or no longer) in this class."""
+
+
 def _generate_class_code():
     """Return a random six-character code for a class."""
     return "".join(secrets.choice(CLASS_CODE_ALPHABET) for _ in range(CLASS_CODE_LENGTH))
@@ -87,3 +91,38 @@ def join_class(student, code):
         # Two "join" clicks at the same moment: the unique constraint lets only one through.
         raise AlreadyEnrolled(code) from error
     return classroom
+
+
+# --- US-04: the class roster --------------------------------------------------------------
+
+
+def _get_taught_class(teacher, class_id):
+    """
+    The teacher's own class. A student is refused here too (not only by the view's IsTeacher):
+    for a student, get_class() would return a joined class, and a roster is the teacher's data.
+    """
+    if not teacher.is_teacher:
+        raise ClassNotFound(class_id)
+    return get_class(teacher, class_id)
+
+
+def list_students(teacher, class_id):
+    """The enrollments (student and join date) of the teacher's own class, by email."""
+    classroom = _get_taught_class(teacher, class_id)
+    return (
+        Enrollment.objects.filter(classroom=classroom)
+        .select_related("student")
+        .order_by("student__email")
+    )
+
+
+def remove_student(teacher, class_id, student_id):
+    """
+    Take a student out of the teacher's own class (US-04). Raises StudentNotEnrolled if they
+    are not in it. The student loses access to the class but may join again with its code;
+    their past submissions stay in the database (progress and reports skip them).
+    """
+    classroom = _get_taught_class(teacher, class_id)
+    deleted, _ = Enrollment.objects.filter(classroom=classroom, student_id=student_id).delete()
+    if not deleted:
+        raise StudentNotEnrolled(student_id)

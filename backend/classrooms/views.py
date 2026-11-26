@@ -13,11 +13,17 @@ from rest_framework.views import APIView
 from accounts.permissions import IsStudent, IsTeacher
 
 from . import services
-from .serializers import ClassroomSerializer, CreateClassSerializer, JoinClassSerializer
+from .serializers import (
+    ClassroomSerializer,
+    CreateClassSerializer,
+    EnrolledStudentSerializer,
+    JoinClassSerializer,
+)
 
 CLASS_NOT_FOUND_MESSAGE = "Анги олдсонгүй."
 CODE_NOT_FOUND_MESSAGE = "Ангийн код олдсонгүй."
 ALREADY_ENROLLED_MESSAGE = "Та энэ ангид аль хэдийн элссэн байна."
+STUDENT_NOT_ENROLLED_MESSAGE = "Сурагч энэ ангид элсээгүй байна."
 
 
 class ClassListCreateView(APIView):
@@ -75,3 +81,33 @@ class JoinClassView(APIView):
         except services.AlreadyEnrolled as exc:
             raise ValidationError({"code": [ALREADY_ENROLLED_MESSAGE]}) from exc
         return Response(ClassroomSerializer(classroom).data, status=status.HTTP_201_CREATED)
+
+
+class ClassStudentListView(APIView):
+    """GET /api/classes/<id>/students/ → the roster of the teacher's own class (US-04)."""
+
+    permission_classes = [IsTeacher]
+
+    def get(self, request, class_id):
+        """Return the class's students with the date each one joined."""
+        try:
+            enrollments = services.list_students(request.user, class_id)
+        except services.ClassNotFound as exc:
+            raise NotFound(CLASS_NOT_FOUND_MESSAGE) from exc
+        return Response(EnrolledStudentSerializer(enrollments, many=True).data)
+
+
+class ClassStudentDetailView(APIView):
+    """DELETE /api/classes/<id>/students/<student_id>/ → the teacher removes a student (US-04)."""
+
+    permission_classes = [IsTeacher]
+
+    def delete(self, request, class_id, student_id):
+        """Take the student out of the class."""
+        try:
+            services.remove_student(request.user, class_id, student_id)
+        except services.ClassNotFound as exc:
+            raise NotFound(CLASS_NOT_FOUND_MESSAGE) from exc
+        except services.StudentNotEnrolled as exc:
+            raise NotFound(STUDENT_NOT_ENROLLED_MESSAGE) from exc
+        return Response(status=status.HTTP_204_NO_CONTENT)

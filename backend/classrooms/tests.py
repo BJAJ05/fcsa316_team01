@@ -171,3 +171,73 @@ def test_class_detail_only_for_its_teacher_and_joined_students(
     response = student_api.get(detail_url(classroom))
     assert response.status_code == 200
     assert response.data["name"] == "Biology 101"
+
+
+# --- US-04: GET/DELETE /api/classes/<id>/students/ ------------------------------------
+
+
+def students_url(classroom, student=None):
+    """URL of a class's roster, or of one student in it."""
+    url = f"/api/classes/{classroom.pk}/students/"
+    return f"{url}{student.pk}/" if student else url
+
+
+def test_teacher_sees_the_class_roster(teacher, student, teacher_api):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    services.join_class(student, classroom.code)
+
+    response = teacher_api.get(students_url(classroom))
+
+    assert response.status_code == 200
+    [row] = response.json()
+    assert (row["id"], row["email"]) == (student.pk, student.email)
+    assert row["joined_at"]
+
+
+def test_teacher_removes_a_student(teacher, student, teacher_api, student_api):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    services.join_class(student, classroom.code)
+
+    response = teacher_api.delete(students_url(classroom, student))
+
+    assert response.status_code == 204
+    assert teacher_api.get(students_url(classroom)).json() == []
+    assert teacher_api.get(detail_url(classroom)).json()["student_count"] == 0
+    assert student_api.get(detail_url(classroom)).status_code == 404
+    assert student_api.get(CLASSES_URL).json() == []
+
+
+def test_removing_a_student_who_is_not_in_the_class_is_404(teacher, student, teacher_api):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+
+    response = teacher_api.delete(students_url(classroom, student))
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Сурагч энэ ангид элсээгүй байна."}
+
+
+def test_other_teacher_gets_404_for_the_roster(teacher, other_teacher, student):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    services.join_class(student, classroom.code)
+    other_teacher_api = APIClient()
+    other_teacher_api.force_authenticate(user=other_teacher)
+
+    assert other_teacher_api.get(students_url(classroom)).json() == {"detail": "Анги олдсонгүй."}
+    assert other_teacher_api.delete(students_url(classroom, student)).status_code == 404
+    assert Enrollment.objects.count() == 1
+
+
+def test_student_cannot_see_or_change_the_roster(teacher, student, student_api):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    services.join_class(student, classroom.code)
+
+    assert student_api.get(students_url(classroom)).status_code == 403
+    assert student_api.delete(students_url(classroom, student)).status_code == 403
+    assert Enrollment.objects.count() == 1
+
+
+def test_roster_requires_login(teacher, student):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+
+    assert APIClient().get(students_url(classroom)).status_code == 401
+    assert APIClient().delete(students_url(classroom, student)).status_code == 401
