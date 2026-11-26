@@ -25,6 +25,9 @@ export default function Layout() {
                 <span className="muted">
                   {user.email} · {ROLE_LABELS[user.role]}
                 </span>
+                {user.role === 'student' && (
+                  <NavLink to="/student/progress">Миний ахиц</NavLink>
+                )}
                 <button type="button" className="button secondary" onClick={handleLogout}>
                   Гарах
                 </button>

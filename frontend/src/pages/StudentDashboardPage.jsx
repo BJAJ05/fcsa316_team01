@@ -7,7 +7,7 @@ import FormField from '../components/FormField.jsx'
 const CODE_LENGTH = 6
 
 // Student's start page after login (US-01). US-03: join a class with its code and see the
-// joined classes. Exercises (US-07) and progress (US-12) come later.
+// joined classes. Exercises (US-07) are listed here; progress is linked from the shared nav.
 export default function StudentDashboardPage() {
   const { user, authFetch } = useAuth()
   const navigate = useNavigate()

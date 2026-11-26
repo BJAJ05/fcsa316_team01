@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router'
 import Layout from './components/Layout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
@@ -12,6 +13,12 @@ import StudentDashboardPage from './pages/StudentDashboardPage.jsx'
 import SubmissionResultPage from './pages/SubmissionResultPage.jsx'
 import TeacherClassPage from './pages/TeacherClassPage.jsx'
 import TeacherDashboardPage from './pages/TeacherDashboardPage.jsx'
+
+// Pages with charts are loaded only when opened: the chart library (recharts, ~400 kB) then
+// stays out of the bundle that every page, including login, downloads first.
+// Wrap their element in <Suspense> (see the "student/progress" route below).
+const StudentProgressPage = lazy(() => import('./pages/StudentProgressPage.jsx'))
+const pageLoading = <p className="muted">Ачаалж байна…</p>
 
 // Add one <Route> per page. Pages live in src/pages/.
 // Pages that need login are wrapped in <RequireAuth> (optionally with a role).
@@ -35,6 +42,16 @@ export default function App() {
           element={
             <RequireAuth role="student">
               <StudentDashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="student/progress"
+          element={
+            <RequireAuth role="student">
+              <Suspense fallback={pageLoading}>
+                <StudentProgressPage />
+              </Suspense>
             </RequireAuth>
           }
         />
