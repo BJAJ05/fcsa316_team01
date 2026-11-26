@@ -266,3 +266,35 @@ a.card:focus-visible {
   justify-content: space-between;
   gap: 8px 16px;
 }
+
+/* Question editor (US-06): one row per multiple-choice option, and the marked right answer. */
+
+.choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.choice-row input[type='text'] {
+  flex: 1 1 240px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.field input.points-input {
+  max-width: 120px;
+}
+
+.question-list {
+  padding-left: 1.5em;
+}
+
+.correct {
+  color: var(--ok);
+  font-weight: 600;
+}

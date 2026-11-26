@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router'
 import Layout from './components/Layout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
+import AssignmentEditorPage from './pages/AssignmentEditorPage.jsx'
 import HomePage from './pages/HomePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
@@ -39,6 +40,14 @@ export default function App() {
           element={
             <RequireAuth role="student">
               <StudentClassPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="teacher/assignments/:assignmentId"
+          element={
+            <RequireAuth role="teacher">
+              <AssignmentEditorPage />
             </RequireAuth>
           }
         />
