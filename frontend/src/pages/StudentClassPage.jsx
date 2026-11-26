@@ -3,8 +3,28 @@ import { Link, useParams } from 'react-router'
 import { formErrors } from '../api/formErrors.js'
 import { useAuth } from '../auth/AuthContext.js'
 
+// What the student can do with an assignment (US-07): see their result, or solve it.
+function AssignmentAction({ assignment }) {
+  if (assignment.submission) {
+    const { id, score, max_score: maxScore } = assignment.submission
+    return (
+      <Link to={`/student/submissions/${id}`}>
+        Илгээсэн — {score}/{maxScore}
+      </Link>
+    )
+  }
+  if (assignment.is_open && assignment.question_count > 0) {
+    return (
+      <Link className="button" to={`/student/assignments/${assignment.id}`}>
+        Ажиллах
+      </Link>
+    )
+  }
+  return null
+}
+
 // One class as a student sees it (US-03), opened after joining or from "Миний ангиуд".
-// US-05: the class's assignments, with their due dates. Solving them comes with US-07.
+// US-05: the class's assignments, with their due dates. US-07: solve them, see the results.
 export default function StudentClassPage() {
   const { classId } = useParams()
   const { authFetch } = useAuth()
@@ -87,11 +107,16 @@ export default function StudentClassPage() {
         <ul className="status-list">
           {assignments.map((assignment) => (
             <li className="status" key={assignment.id}>
-              <strong>{assignment.title}</strong> · Дуусах:{' '}
-              {new Date(assignment.due_date).toLocaleString('mn-MN')}{' '}
-              <span className={assignment.is_open ? 'badge ok' : 'badge'}>
-                {assignment.is_open ? 'Нээлттэй' : 'Хугацаа дууссан'}
-              </span>
+              <div className="list-row">
+                <span>
+                  <strong>{assignment.title}</strong> · {assignment.question_count} асуулт ·
+                  Дуусах: {new Date(assignment.due_date).toLocaleString('mn-MN')}{' '}
+                  <span className={assignment.is_open ? 'badge ok' : 'badge'}>
+                    {assignment.is_open ? 'Нээлттэй' : 'Хугацаа дууссан'}
+                  </span>
+                </span>
+                <AssignmentAction assignment={assignment} />
+              </div>
               {assignment.instructions && <p className="muted">{assignment.instructions}</p>}
             </li>
           ))}

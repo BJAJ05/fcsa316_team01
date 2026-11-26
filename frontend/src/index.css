@@ -346,3 +346,33 @@ a.card:focus-visible {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Solving an assignment and its result (US-07). */
+
+.question-card {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.question-text {
+  margin: 0 0 12px;
+  font-size: 1.1em;
+  white-space: pre-wrap;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.score {
+  font-size: 1.25em;
+}
+
+.wrong {
+  color: var(--error);
+  font-weight: 600;
+}

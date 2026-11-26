@@ -6,8 +6,10 @@ import HomePage from './pages/HomePage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
+import SolveAssignmentPage from './pages/SolveAssignmentPage.jsx'
 import StudentClassPage from './pages/StudentClassPage.jsx'
 import StudentDashboardPage from './pages/StudentDashboardPage.jsx'
+import SubmissionResultPage from './pages/SubmissionResultPage.jsx'
 import TeacherClassPage from './pages/TeacherClassPage.jsx'
 import TeacherDashboardPage from './pages/TeacherDashboardPage.jsx'
 
@@ -57,6 +59,22 @@ export default function App() {
           element={
             <RequireAuth role="teacher">
               <AssignmentEditorPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="student/assignments/:assignmentId"
+          element={
+            <RequireAuth role="student">
+              <SolveAssignmentPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="student/submissions/:submissionId"
+          element={
+            <RequireAuth role="student">
+              <SubmissionResultPage />
             </RequireAuth>
           }
         />
