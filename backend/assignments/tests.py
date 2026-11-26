@@ -375,3 +375,108 @@ def test_deleting_unknown_question_is_404(teacher_api, assignment):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Асуулт олдсонгүй."}
+
+
+# --- US-06 (6.4): question validation ------------------------------------------------------
+
+
+def post_question(client, assignment, **changes):
+    """POST a multiple-choice question with some fields changed; returns the response."""
+    return client.post(questions_url(assignment), {**MULTIPLE_CHOICE, **changes}, format="json")
+
+
+def assert_rejected(response, field, message):
+    """400 with exactly this Mongolian message, and no question saved."""
+    assert response.status_code == 400
+    assert response.json() == {field: [message]}
+    assert not Question.objects.exists()
+
+
+def test_multiple_choice_without_correct_choice_is_not_saved(teacher_api, assignment):
+    response = post_question(
+        teacher_api,
+        assignment,
+        choices=[{"text": "3", "is_correct": False}, {"text": "4", "is_correct": False}],
+    )
+
+    assert_rejected(response, "choices", "Зөв хариултыг сонгоно уу.")
+    assert teacher_api.get(detail_url(assignment)).json()["question_count"] == 0
+
+
+def test_multiple_choice_with_one_choice_is_rejected(teacher_api, assignment):
+    response = post_question(teacher_api, assignment, choices=[{"text": "4", "is_correct": True}])
+
+    assert_rejected(response, "choices", "Хамгийн багадаа 2 сонголт оруулна уу.")
+
+
+def test_empty_choices_do_not_count(teacher_api, assignment):
+    response = post_question(
+        teacher_api,
+        assignment,
+        choices=[{"text": "4", "is_correct": True}, {"text": "   ", "is_correct": False}],
+    )
+
+    assert_rejected(response, "choices", "Хамгийн багадаа 2 сонголт оруулна уу.")
+
+
+def test_multiple_choice_with_seven_choices_is_rejected(teacher_api, assignment):
+    choices = [{"text": str(n), "is_correct": n == 1} for n in range(1, 8)]
+
+    response = post_question(teacher_api, assignment, choices=choices)
+
+    assert_rejected(response, "choices", "Хамгийн ихдээ 6 сонголт оруулна уу.")
+
+
+def test_multiple_choice_with_two_correct_choices_is_rejected(teacher_api, assignment):
+    response = post_question(
+        teacher_api,
+        assignment,
+        choices=[{"text": "4", "is_correct": True}, {"text": "четыре", "is_correct": True}],
+    )
+
+    assert_rejected(response, "choices", "Зөвхөн нэг зөв хариулт сонгоно уу.")
+
+
+def test_fill_in_without_correct_answer_is_rejected(teacher_api, assignment):
+    for answer in ({}, {"correct_answer": "   "}):
+        body = {"kind": "fill_in", "text": "Монголын нийслэл?", **answer}
+
+        response = teacher_api.post(questions_url(assignment), body, format="json")
+
+        assert_rejected(response, "correct_answer", "Зөв хариултыг оруулна уу.")
+
+
+def test_question_text_is_required(teacher_api, assignment):
+    response = post_question(teacher_api, assignment, text="  ")
+
+    assert_rejected(response, "text", "Асуултын текстийг оруулна уу.")
+
+
+def test_points_below_one_are_rejected(teacher_api, assignment):
+    response = post_question(teacher_api, assignment, points=0)
+
+    assert_rejected(response, "points", "Оноо 1-ээс бага байж болохгүй.")
+
+
+def test_unknown_question_kind_is_rejected(teacher_api, assignment):
+    response = post_question(teacher_api, assignment, kind="essay")
+
+    assert_rejected(response, "kind", "Асуултын төрлийг сонгоно уу.")
+
+
+def test_points_default_to_one(teacher_api, assignment):
+    body = {key: value for key, value in MULTIPLE_CHOICE.items() if key != "points"}
+
+    response = teacher_api.post(questions_url(assignment), body, format="json")
+
+    assert response.status_code == 201
+    assert response.json()["points"] == 1
+
+
+def test_valid_questions_increase_question_count(teacher_api, assignment):
+    teacher_api.post(questions_url(assignment), MULTIPLE_CHOICE, format="json")
+    after_first = teacher_api.get(detail_url(assignment)).json()["question_count"]
+    teacher_api.post(questions_url(assignment), FILL_IN, format="json")
+    after_second = teacher_api.get(detail_url(assignment)).json()["question_count"]
+
+    assert (after_first, after_second) == (1, 2)
