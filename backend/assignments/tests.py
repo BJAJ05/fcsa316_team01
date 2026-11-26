@@ -480,3 +480,30 @@ def test_valid_questions_increase_question_count(teacher_api, assignment):
     after_second = teacher_api.get(detail_url(assignment)).json()["question_count"]
 
     assert (after_first, after_second) == (1, 2)
+
+
+@pytest.mark.parametrize(
+    "choices, field, message",
+    [
+        ([{"is_correct": True}, {"text": "4"}], "text", "Сонголтын текстийг оруулна уу."),
+        (
+            [{"text": "3", "is_correct": "maybe"}, {"text": "4"}],
+            "is_correct",
+            "Сонголтын зөв эсэх буруу байна.",
+        ),
+        (["3", "4"], "non_field_errors", "Сонголт буруу байна."),
+    ],
+)
+def test_malformed_choices_are_rejected_in_mongolian(
+    teacher_api, assignment, choices, field, message
+):
+    response = teacher_api.post(
+        questions_url(assignment),
+        {**MULTIPLE_CHOICE, "choices": choices},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    # DRF reports errors of each option under its index: {"choices": {"0": {field: [...]}}}.
+    assert response.json()["choices"]["0"] == {field: [message]}
+    assert not Question.objects.exists()
