@@ -18,7 +18,7 @@
 
 | Хэсэг | Технологи | Хавтас |
 |---|---|---|
-| Клиент | React 19 + Vite + React Router | [`frontend/`](frontend/README.md) |
+| Клиент | React 19 + Vite + React Router, Recharts (график) | [`frontend/`](frontend/README.md) |
 | Сервер | Python Django 5.2 + Django REST Framework, JWT | [`backend/`](backend/README.md) |
 | Өгөгдлийн сан | PostgreSQL | — |
 
