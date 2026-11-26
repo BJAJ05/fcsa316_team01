@@ -5,6 +5,7 @@ US-05: teachers create, change and delete assignments in their own classes; teac
 enrolled students list and open them. Access goes through classrooms.services, so a user
 only ever reaches assignments of classes they teach or have joined.
 US-06: teachers add multiple-choice and fill-in questions to their own assignments.
+US-07: once a student has submitted an assignment, its questions can no longer change.
 """
 
 from django.db import transaction
@@ -21,6 +22,16 @@ class AssignmentNotFound(Exception):
 
 class QuestionNotFound(Exception):
     """No question with that id in the given assignment."""
+
+
+class QuestionsLocked(Exception):
+    """The assignment already has submissions, so its questions can no longer change (US-07)."""
+
+
+def _ensure_questions_can_change(assignment):
+    """Graded submissions must keep matching the questions they were graded against."""
+    if Assignment.objects.filter(pk=assignment.pk, submissions__isnull=False).exists():
+        raise QuestionsLocked(assignment.pk)
 
 
 def _with_question_count(assignments):
@@ -80,8 +91,10 @@ def add_question(teacher, assignment_id, data):
     """
     Add a question to the teacher's own assignment, at the end of its list. `data` is the
     validated question: kind, text, points, correct_answer and (multiple choice) choices.
+    Raises QuestionsLocked once the assignment has submissions.
     """
     assignment = get_assignment(teacher, assignment_id)
+    _ensure_questions_can_change(assignment)
     with transaction.atomic():
         question = Question.objects.create(
             assignment=assignment,
@@ -99,8 +112,9 @@ def add_question(teacher, assignment_id, data):
 
 
 def delete_question(teacher, assignment_id, question_id):
-    """Delete one question of the teacher's own assignment."""
+    """Delete one question of the teacher's own assignment (QuestionsLocked after submissions)."""
     assignment = get_assignment(teacher, assignment_id)
+    _ensure_questions_can_change(assignment)
     deleted, _ = Question.objects.filter(pk=question_id, assignment=assignment).delete()
     if not deleted:
         raise QuestionNotFound(question_id)

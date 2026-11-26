@@ -64,10 +64,11 @@ def test_teacher_creates_assignment_in_own_class(teacher_api, classroom):
     data = response.json()
     assert set(data) == {
         "id", "classroom", "title", "instructions", "due_date", "is_open", "question_count",
-        "created_at",
+        "submission", "created_at",
     }
     assert (data["classroom"], data["title"], data["is_open"]) == (classroom.pk, "Cells", True)
     assert data["question_count"] == 0
+    assert data["submission"] is None  # only a student's own result is ever shown (US-07)
     assert data["due_date"].endswith("+08:00")  # shown in the project's time zone
     assert Assignment.objects.get().classroom == classroom
 
