@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import pytest
 from django.utils import timezone
+from rest_framework.test import APIClient
 
 from accounts.models import User
 from analytics.services import student_progress
@@ -109,3 +110,26 @@ def test_student_progress_endpoint_is_student_only(teacher, student):
 
     teacher_response = logged_in_client(teacher).get("/api/analytics/progress/")
     assert teacher_response.status_code == 403
+
+    assert APIClient().get("/api/analytics/progress/").status_code == 401
+
+
+def test_student_progress_endpoint_returns_the_class_and_its_assignments(teacher, student):
+    classroom = create_class(teacher, "Биологи 10А", "Биологи")
+    join_class(student, classroom.code)
+    graded = make_assignment(classroom, "Эс")
+    make_assignment(classroom, "Генетик")
+    Submission.objects.create(assignment=graded, student=student, score=8, max_score=10)
+
+    response = logged_in_client(student).get("/api/analytics/progress/")
+
+    assert response.status_code == 200
+    [progress] = response.json()
+    assert (progress["class_name"], progress["completion_percent"]) == ("Биологи 10А", 50)
+    assert progress["average_percent"] == 80
+    assert [(a["title"], a["percent"]) for a in progress["assignments"]] == [
+        ("Эс", 80),
+        ("Генетик", None),
+    ]
+    # Dates come in the project's time zone, like the other APIs.
+    assert progress["assignments"][0]["due_date"].endswith("+08:00")

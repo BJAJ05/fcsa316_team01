@@ -12,12 +12,12 @@ from django.db.models import (
     Count,
     F,
     FloatField,
-    Prefetch,
     Q,
     Value,
     When,
 )
 from django.db.models.expressions import ExpressionWrapper
+from django.utils import timezone
 
 from assignments.models import Assignment
 from classrooms.services import list_classes
@@ -57,26 +57,28 @@ def student_progress(student):
     )
     stats_by_class = {row["classroom_id"]: row for row in stats}
 
+    # The student's percentage per assignment (at most one submission each).
+    percent_by_assignment = {
+        submission.assignment.pk: submission.percent
+        for submission in Submission.objects.filter(
+            student=student, assignment__classroom__in=classroom_ids
+        ).select_related("assignment")
+    }
+    # .values() gives plain dicts: the editor's type checker knows their keys, whereas
+    # attributes Django adds at runtime (classroom_id, Prefetch to_attr) look unknown to it.
     assignments_by_class = {classroom_id: [] for classroom_id in classroom_ids}
-    assignments = (
-        Assignment.objects.filter(classroom_id__in=classroom_ids)
-        .order_by("classroom_id", "due_date", "pk")
-        .prefetch_related(
-            Prefetch(
-                "submissions",
-                queryset=Submission.objects.filter(student=student),
-                to_attr="student_submissions",
-            )
-        )
-    )
-    for assignment in assignments:
-        submissions = assignment.student_submissions
-        assignments_by_class[assignment.classroom_id].append(
+    for row in (
+        Assignment.objects.filter(classroom__in=classroom_ids)
+        .order_by("due_date", "pk")
+        .values("pk", "classroom", "title", "due_date")
+    ):
+        assignments_by_class[row["classroom"]].append(
             {
-                "id": assignment.pk,
-                "title": assignment.title,
-                "due_date": assignment.due_date,
-                "percent": submissions[0].percent if submissions else None,
+                "id": row["pk"],
+                "title": row["title"],
+                # In the project's time zone (+08:00), like every other API's dates.
+                "due_date": timezone.localtime(row["due_date"]),
+                "percent": percent_by_assignment.get(row["pk"]),
             }
         )
 
