@@ -1,4 +1,9 @@
 """URL routes for `analytics`, mounted at /api/analytics/ in config/urls.py."""
 
-# Example: path("me/", views.StudentProgressView.as_view(), name="student-progress"),
-urlpatterns = []
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("progress/", views.StudentProgressView.as_view(), name="student-progress"),
+]

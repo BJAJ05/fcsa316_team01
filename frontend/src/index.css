@@ -242,6 +242,44 @@ a.card:focus-visible {
   font-size: 1.1em;
 }
 
+/* Student progress (US-12). */
+
+.progress-list {
+  grid-template-columns: 1fr;
+}
+
+.progress-card {
+  min-width: 0;
+}
+
+.progress-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  font-weight: 600;
+}
+
+.progress-label progress {
+  width: 100%;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.progress-card h2 {
+  margin: 16px 0 0;
+  font-size: 1em;
+}
+
+.progress-assignment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  padding-left: 1.25em;
+  color: var(--muted);
+}
+
 /* Assignments (US-05): a status label next to each assignment, and list rows with a button. */
 
 .badge {

@@ -9,6 +9,7 @@ import RegisterPage from './pages/RegisterPage.jsx'
 import SolveAssignmentPage from './pages/SolveAssignmentPage.jsx'
 import StudentClassPage from './pages/StudentClassPage.jsx'
 import StudentDashboardPage from './pages/StudentDashboardPage.jsx'
+import StudentProgressPage from './pages/StudentProgressPage.jsx'
 import SubmissionResultPage from './pages/SubmissionResultPage.jsx'
 import TeacherClassPage from './pages/TeacherClassPage.jsx'
 import TeacherDashboardPage from './pages/TeacherDashboardPage.jsx'
@@ -35,6 +36,14 @@ export default function App() {
           element={
             <RequireAuth role="student">
               <StudentDashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="student/progress"
+          element={
+            <RequireAuth role="student">
+              <StudentProgressPage />
             </RequireAuth>
           }
         />
