@@ -6,7 +6,7 @@ import pytest
 from django.utils import timezone
 from rest_framework.test import APIClient
 
-from assignments.models import Assignment
+from assignments.models import Assignment, Choice, Question
 from classrooms.services import create_class, join_class
 from conftest import logged_in_client
 
@@ -63,9 +63,11 @@ def test_teacher_creates_assignment_in_own_class(teacher_api, classroom):
     assert response.status_code == 201
     data = response.json()
     assert set(data) == {
-        "id", "classroom", "title", "instructions", "due_date", "is_open", "created_at"
+        "id", "classroom", "title", "instructions", "due_date", "is_open", "question_count",
+        "created_at",
     }
     assert (data["classroom"], data["title"], data["is_open"]) == (classroom.pk, "Cells", True)
+    assert data["question_count"] == 0
     assert data["due_date"].endswith("+08:00")  # shown in the project's time zone
     assert Assignment.objects.get().classroom == classroom
 
@@ -257,3 +259,119 @@ def test_teacher_deletes_assignment(teacher_api, assignment):
 
     assert response.status_code == 204
     assert not Assignment.objects.exists()
+
+
+# --- US-06: POST/DELETE /api/assignments/<id>/questions/ --------------------------------
+
+
+def questions_url(assignment):
+    """URL for adding a question to an assignment."""
+    return f"/api/assignments/{assignment.pk}/questions/"
+
+
+MULTIPLE_CHOICE = {
+    "kind": "multiple_choice",
+    "text": "2 + 2 = ?",
+    "points": 2,
+    "choices": [{"text": "3", "is_correct": False}, {"text": "4", "is_correct": True}],
+}
+FILL_IN = {
+    "kind": "fill_in",
+    "text": "Монголын нийслэл?",
+    "points": 1,
+    "correct_answer": " Улаанбаатар ",
+}
+
+
+def test_teacher_adds_multiple_choice_question(teacher_api, assignment):
+    response = teacher_api.post(questions_url(assignment), MULTIPLE_CHOICE, format="json")
+
+    assert response.status_code == 201
+    data = response.json()
+    assert (data["kind"], data["text"], data["points"], data["position"]) == (
+        "multiple_choice", "2 + 2 = ?", 2, 0
+    )
+    assert [(c["text"], c["is_correct"]) for c in data["choices"]] == [("3", False), ("4", True)]
+    assert teacher_api.get(detail_url(assignment)).json()["question_count"] == 1
+
+
+def test_teacher_adds_fill_in_question_with_trimmed_answer(teacher_api, assignment):
+    response = teacher_api.post(questions_url(assignment), FILL_IN, format="json")
+
+    assert response.status_code == 201
+    assert response.json()["correct_answer"] == "Улаанбаатар"
+    assert response.json()["choices"] == []
+    assert Choice.objects.count() == 0
+
+
+def test_question_count_is_listed_for_each_assignment(teacher_api, classroom, assignment):
+    teacher_api.post(questions_url(assignment), MULTIPLE_CHOICE, format="json")
+    teacher_api.post(questions_url(assignment), FILL_IN, format="json")
+
+    response = teacher_api.get(ASSIGNMENTS_URL, {"classroom": classroom.pk})
+
+    assert [item["question_count"] for item in response.json()] == [2]
+
+
+def test_teacher_sees_questions_with_correct_answers(teacher_api, assignment):
+    teacher_api.post(questions_url(assignment), MULTIPLE_CHOICE, format="json")
+    teacher_api.post(questions_url(assignment), FILL_IN, format="json")
+
+    questions = teacher_api.get(detail_url(assignment)).json()["questions"]
+
+    assert [q["text"] for q in questions] == ["2 + 2 = ?", "Монголын нийслэл?"]
+    assert questions[0]["choices"][1]["is_correct"] is True
+    assert questions[1]["correct_answer"] == "Улаанбаатар"
+
+
+def test_student_never_receives_correct_answers(
+    teacher_api, student, student_api, classroom, assignment
+):
+    teacher_api.post(questions_url(assignment), MULTIPLE_CHOICE, format="json")
+    teacher_api.post(questions_url(assignment), FILL_IN, format="json")
+    join_class(student, classroom.code)
+
+    response = student_api.get(detail_url(assignment))
+
+    assert response.status_code == 200
+    questions = response.json()["questions"]
+    assert [set(q) for q in questions] == [{"id", "kind", "text", "points", "choices"}] * 2
+    assert [set(c) for c in questions[0]["choices"]] == [{"id", "text"}] * 2
+    assert "Улаанбаатар" not in response.content.decode()
+
+
+def test_other_teacher_cannot_add_question(other_teacher, assignment):
+    response = logged_in_client(other_teacher).post(
+        questions_url(assignment), MULTIPLE_CHOICE, format="json"
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Даалгавар олдсонгүй."}
+    assert not Question.objects.exists()
+
+
+def test_student_cannot_add_question(student, student_api, classroom, assignment):
+    join_class(student, classroom.code)
+
+    response = student_api.post(questions_url(assignment), MULTIPLE_CHOICE, format="json")
+
+    assert response.status_code == 403
+    assert not Question.objects.exists()
+
+
+def test_teacher_deletes_question(teacher_api, assignment):
+    question_id = teacher_api.post(
+        questions_url(assignment), MULTIPLE_CHOICE, format="json"
+    ).json()["id"]
+
+    response = teacher_api.delete(f"{questions_url(assignment)}{question_id}/")
+
+    assert response.status_code == 204
+    assert not Question.objects.exists()
+
+
+def test_deleting_unknown_question_is_404(teacher_api, assignment):
+    response = teacher_api.delete(f"{questions_url(assignment)}999/")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Асуулт олдсонгүй."}

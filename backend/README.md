@@ -200,9 +200,10 @@ HTTP-гүйгээр unit тестлэх боломжтой.
 `400 {"code": ["Ангийн кодыг оруулна уу."]}`. Элсэлт `Enrollment` хүснэгтэд хадгалагдана
 (`classroom.students`, `user.joined_classes`).
 
-### Даалгаврын API (US-05)
+### Даалгаврын API (US-05, US-06)
 
-Даалгавар бүрийн хариу: `{id, classroom, title, instructions, due_date, is_open, created_at}`.
+Даалгавар бүрийн хариу: `{id, classroom, title, instructions, due_date, is_open, question_count,
+created_at}`.
 `due_date` нь ISO 8601, цагийн бүстэй (`"2026-12-01T18:00:00+08:00"`); `is_open` нь дуусах хугацаа
 өнгөрөөгүй бол `true`.
 
@@ -210,9 +211,11 @@ HTTP-гүйгээр unit тестлэх боломжтой.
 |---|---|---|---|
 | `GET /api/assignments/?classroom=<id>` | багш, сурагч | — | `200 [даалгавар]` — дуусах хугацаагаар эрэмбэлсэн |
 | `POST /api/assignments/` | багш (ангийн эзэн) | `{classroom, title, instructions, due_date}` — `instructions` заавал биш | `201 даалгавар` |
-| `GET /api/assignments/<id>/` | багш, сурагч | — | `200 даалгавар` |
+| `GET /api/assignments/<id>/` | багш, сурагч | — | `200 даалгавар` + `questions` (доор) |
 | `PATCH /api/assignments/<id>/` | багш (эзэн) | `{title?, instructions?, due_date?}` | `200 даалгавар`; ангийг өөрчлөх боломжгүй |
 | `DELETE /api/assignments/<id>/` | багш (эзэн) | — | `204` |
+| `POST /api/assignments/<id>/questions/` | багш (эзэн) | асуулт (доор) | `201 асуулт`; даалгаврын төгсгөлд нэмэгдэнэ |
+| `DELETE /api/assignments/<id>/questions/<question_id>/` | багш (эзэн) | — | `204` |
 
 Алдаа: өөрийн бус / элсээгүй анги → `404 {"detail": "Анги олдсонгүй."}`, өөрийн бус / байхгүй
 даалгавар → `404 {"detail": "Даалгавар олдсонгүй."}`, `?classroom=` эсвэл `classroom` дутуу →
@@ -220,6 +223,25 @@ HTTP-гүйгээр unit тестлэх боломжтой.
 `400 {"due_date": ["Дуусах хугацаа ирээдүйд байх ёстой."]}`, нэргүй →
 `400 {"title": ["Даалгаврын нэрийг оруулна уу."]}`, хугацаагүй →
 `400 {"due_date": ["Дуусах хугацааг оруулна уу."]}`. Сурагч `POST/PATCH/DELETE` хийвэл `403`.
+
+**Асуулт (US-06).** Хоёр загвар:
+
+```json
+{"kind": "multiple_choice", "text": "2 + 2 = ?", "points": 2,
+ "choices": [{"text": "3", "is_correct": false}, {"text": "4", "is_correct": true}]}
+{"kind": "fill_in", "text": "Монголын нийслэл?", "points": 1, "correct_answer": "Улаанбаатар"}
+```
+
+`points` заавал биш (анхдагч 1). Олон сонголттойд хоосон сонголтыг хасаад 2–6 сонголт, яг нэг зөв
+хариулт байх ёстой. `GET /api/assignments/<id>/`-ийн `questions`: **багшид**
+`{id, kind, text, points, position, correct_answer, choices: [{id, text, is_correct}]}`, **сурагчид**
+`{id, kind, text, points, choices: [{id, text}]}` — зөв хариулт сурагчид хэзээ ч очихгүй.
+
+Асуултын алдаа (`400`): `{"text": ["Асуултын текстийг оруулна уу."]}`,
+`{"points": ["Оноо 1-ээс бага байж болохгүй."]}`, `{"kind": ["Асуултын төрлийг сонгоно уу."]}`,
+`{"choices": ["Хамгийн багадаа 2 сонголт оруулна уу."]}` / `["Хамгийн ихдээ 6 сонголт оруулна уу."]` /
+`["Зөв хариултыг сонгоно уу."]` / `["Зөвхөн нэг зөв хариулт сонгоно уу."]`,
+`{"correct_answer": ["Зөв хариултыг оруулна уу."]}`. Байхгүй асуулт → `404 {"detail": "Асуулт олдсонгүй."}`.
 
 ## 6. Багийн дүрэм
 
