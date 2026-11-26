@@ -6,7 +6,7 @@ import pytest
 from django.utils import timezone
 
 from assignments import services
-from assignments.models import Assignment
+from assignments.models import Assignment, Choice, Question
 from classrooms.services import ClassNotFound, create_class, join_class
 
 pytestmark = pytest.mark.django_db
@@ -105,3 +105,61 @@ def test_is_open_until_the_due_date_passes(classroom):
 
     assert open_one.is_open is True
     assert closed_one.is_open is False
+
+
+# --- US-06: questions ----------------------------------------------------------------------
+
+
+def multiple_choice(text="2 + 2 = ?", points=2):
+    """Validated data of a multiple-choice question, as QuestionInputSerializer returns it."""
+    return {
+        "kind": "multiple_choice",
+        "text": text,
+        "points": points,
+        "correct_answer": "",
+        "choices": [{"text": "3", "is_correct": False}, {"text": "4", "is_correct": True}],
+    }
+
+
+def test_add_question_saves_choices_and_puts_it_last(teacher, classroom):
+    assignment = services.create_assignment(teacher, classroom.pk, "Math", "", tomorrow())
+
+    first = services.add_question(teacher, assignment.pk, multiple_choice("First"))
+    second = services.add_question(teacher, assignment.pk, multiple_choice("Second"))
+
+    assert (first.position, second.position) == (0, 1)
+    assert [(c.text, c.is_correct) for c in Choice.objects.filter(question=first)] == [
+        ("3", False),
+        ("4", True),
+    ]
+    assert services.get_assignment(teacher, assignment.pk).question_count == 2
+
+
+def test_add_question_to_another_teachers_assignment_is_refused(
+    teacher, other_teacher, classroom
+):
+    assignment = services.create_assignment(teacher, classroom.pk, "Math", "", tomorrow())
+
+    with pytest.raises(services.AssignmentNotFound):
+        services.add_question(other_teacher, assignment.pk, multiple_choice())
+    assert not Question.objects.exists()
+
+
+def test_delete_question_removes_it_with_its_choices(teacher, classroom):
+    assignment = services.create_assignment(teacher, classroom.pk, "Math", "", tomorrow())
+    question = services.add_question(teacher, assignment.pk, multiple_choice())
+
+    services.delete_question(teacher, assignment.pk, question.pk)
+
+    assert not Question.objects.exists()
+    assert not Choice.objects.exists()
+
+
+def test_delete_question_of_another_assignment_raises_not_found(teacher, classroom):
+    first = services.create_assignment(teacher, classroom.pk, "First", "", tomorrow())
+    second = services.create_assignment(teacher, classroom.pk, "Second", "", tomorrow())
+    question = services.add_question(teacher, first.pk, multiple_choice())
+
+    with pytest.raises(services.QuestionNotFound):
+        services.delete_question(teacher, second.pk, question.pk)
+    assert Question.objects.filter(pk=question.pk).exists()

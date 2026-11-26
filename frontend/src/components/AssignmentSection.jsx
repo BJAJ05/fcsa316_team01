@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import { formErrors } from '../api/formErrors.js'
 import { useAuth } from '../auth/AuthContext.js'
 import FormField from './FormField.jsx'
@@ -9,6 +10,7 @@ function byDueDate(a, b) {
 }
 
 // US-05: a teacher's assignments in one class, with a "new assignment" form.
+// US-06: each assignment links to its editor page, where questions are added.
 // Used on the teacher's class page:  <AssignmentSection classId={classId} />
 export default function AssignmentSection({ classId }) {
   const { authFetch } = useAuth()
@@ -105,7 +107,10 @@ export default function AssignmentSection({ classId }) {
           {assignments.map((assignment) => (
             <li className="status list-row" key={assignment.id}>
               <span>
-                <strong>{assignment.title}</strong> · Дуусах:{' '}
+                <Link to={`/teacher/assignments/${assignment.id}`}>
+                  <strong>{assignment.title}</strong>
+                </Link>{' '}
+                · {assignment.question_count} асуулт · Дуусах:{' '}
                 {new Date(assignment.due_date).toLocaleString('mn-MN')}{' '}
                 <span className={assignment.is_open ? 'badge ok' : 'badge'}>
                   {assignment.is_open ? 'Нээлттэй' : 'Хугацаа дууссан'}
