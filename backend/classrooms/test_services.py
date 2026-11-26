@@ -5,8 +5,10 @@ from unittest.mock import patch
 import pytest
 from django.db import IntegrityError
 
+from accounts.models import User
 from classrooms import services
 from classrooms.models import Classroom, Enrollment
+from conftest import make_user
 
 pytestmark = pytest.mark.django_db
 
@@ -113,3 +115,57 @@ def test_get_class_hides_classes_the_user_cannot_see(teacher, other_teacher, stu
 
     services.join_class(student, classroom.code)
     assert services.get_class(student, classroom.pk) == classroom
+
+
+# --- US-04: the class roster ----------------------------------------------------------
+
+
+def test_list_students_returns_enrolled_students_by_email(teacher, student):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    another = make_user("anar@example.com", User.Role.STUDENT)
+    services.join_class(student, classroom.code)
+    services.join_class(another, classroom.code)
+
+    roster = services.list_students(teacher, classroom.pk)
+
+    assert [enrollment.student for enrollment in roster] == [another, student]
+
+
+def test_roster_of_another_teachers_class_is_not_found(teacher, other_teacher):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+
+    with pytest.raises(services.ClassNotFound):
+        services.list_students(other_teacher, classroom.pk)
+    with pytest.raises(services.ClassNotFound):
+        services.remove_student(other_teacher, classroom.pk, 1)
+
+
+def test_student_cannot_use_roster_services_even_for_a_joined_class(teacher, student):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    services.join_class(student, classroom.code)
+
+    with pytest.raises(services.ClassNotFound):
+        services.list_students(student, classroom.pk)
+    with pytest.raises(services.ClassNotFound):
+        services.remove_student(student, classroom.pk, student.pk)
+    assert Enrollment.objects.count() == 1
+
+
+def test_removed_student_loses_the_class_and_may_join_again(teacher, student):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+    services.join_class(student, classroom.code)
+
+    services.remove_student(teacher, classroom.pk, student.pk)
+
+    assert not Enrollment.objects.exists()
+    with pytest.raises(services.ClassNotFound):
+        services.get_class(student, classroom.pk)
+    services.join_class(student, classroom.code)
+    assert services.get_class(student, classroom.pk) == classroom
+
+
+def test_removing_a_student_who_is_not_in_the_class_raises(teacher, student):
+    classroom = services.create_class(teacher, "Biology 101", "Biology")
+
+    with pytest.raises(services.StudentNotEnrolled):
+        services.remove_student(teacher, classroom.pk, student.pk)

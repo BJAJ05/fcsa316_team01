@@ -132,7 +132,9 @@ def test_add_question_saves_choices_and_puts_it_last(teacher, classroom):
         ("3", False),
         ("4", True),
     ]
-    assert services.get_assignment(teacher, assignment.pk).question_count == 2
+    # question_count is added by .annotate() in services, not a model field, so the editor
+    # cannot know it: read it the way the serializer does.
+    assert getattr(services.get_assignment(teacher, assignment.pk), "question_count") == 2
 
 
 def test_add_question_to_another_teachers_assignment_is_refused(

@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from .models import Classroom
+from .models import Classroom, Enrollment
 
 NAME_ERRORS = {
     "required": "Ангийн нэрээ оруулна уу.",
@@ -40,6 +40,18 @@ class JoinClassSerializer(serializers.Serializer):  # pylint: disable=abstract-m
 
     # Spaces around the code are removed here; services.join_class() also uppercases it.
     code = serializers.CharField(error_messages=CODE_ERRORS)
+
+
+class EnrolledStudentSerializer(serializers.ModelSerializer):
+    """One row of a class roster (US-04): the student's id and email, and when they joined."""
+
+    id = serializers.IntegerField(source="student.pk", read_only=True)
+    email = serializers.EmailField(source="student.email", read_only=True)
+
+    class Meta:
+        model = Enrollment
+        fields = ("id", "email", "joined_at")
+        read_only_fields = fields
 
 
 class ClassroomSerializer(serializers.ModelSerializer):
